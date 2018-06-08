@@ -12,18 +12,17 @@ Refs:
     graphviz Graph API
     @ http://graphviz.readthedocs.io/en/stable/api.html#graph
 """
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+from __future__ import absolute_import, division, print_function
 
 from random import getrandbits
 from graphviz import Digraph
 from .layer import Layer
 
-# TODO What are the best BW values?
-COLOR_OUTLINE = "#4080A0"
-COLOR_FILL = "#F0F0F0"
-COLOR_FONT = "#204050"
+OUTLINE_COLOR = "#4080A0"  # "#484848"
+FILL_COLOR = "#F0F0F0"  # "#E8E8E8"
+FONT_COLOR = "#204050"  # "#000000"
+FONT_NAME = "Verdana"  # "Times"
+FONT_SIZE = "10"  # "8"
 
 class DirectedGraph():
     """Tracks nodes and edges of a directed graph and supports basic operations on them."""
@@ -35,6 +34,15 @@ class DirectedGraph():
         self.fold_rules = fold_rules
         self.group_rules = group_rules
         self.meaningful_ids = meaningful_ids
+
+        # Default style
+        self.theme = {
+            "outline_color": OUTLINE_COLOR,
+            "fill_color": FILL_COLOR,
+            "font_color": FONT_COLOR,
+            "font_name": FONT_NAME,
+            "font_size": FONT_SIZE,
+        }
 
     def id(self, node):
         """Returns a unique node identifier. If the node has an id
@@ -249,9 +257,8 @@ class DirectedGraph():
 
         # Convert to graphviz Digraph
         dot = Digraph()
-        dot.attr("node", shape="box", style="filled", fillcolor="#e8e8e8",
-                 fontsize="10", margin="0.11,0")
-        dot.attr("edge", fontsize="8")
+        dot.attr("node", shape="box", style="filled", fillcolor="#e8e8e8", fontsize="10", margin="0.11,0")
+        dot.attr("edge", fontsize="10")
         for k, n in self.nodes.items():
             if n.repeat == 1:
                 if n.title == '+':
@@ -270,8 +277,7 @@ class DirectedGraph():
             dot.edge(str(a), str(b), label)
         return dot
 
-    # TODO Waleed, is this work in progress? Switch to this when completely done?
-    def draw_graph_wip(self, simplify=True, output_shapes=True, verbose=False):
+    def draw_graph_html(self, simplify=True, output_shapes=True, verbose=False):
         """Simplify the graph using a sequence of pruning, collapsing, and grouping rules.
         simplify: If True, simplify the graph before drawing it; otherwise, draw the graph unchanged.
         output_shapes: If True, print output shapes along edges; otherwise, don't.
@@ -290,11 +296,13 @@ class DirectedGraph():
 
         # Convert to graphviz Digraph
         dot = Digraph()
-        dot.attr("graph", splines="ortho", nodesep="2", color=COLOR_OUTLINE, fontcolor=COLOR_FONT,
-                 fontsize="10", fontname="Verdana")
-        dot.attr("node", shape="box", style="filled", fillcolor=COLOR_FILL, color=COLOR_OUTLINE,
-                 fontsize="10", margin="0,0", fontcolor=COLOR_FONT, fontname="verdana")
-        dot.attr("edge", style="doted", color=COLOR_OUTLINE)
+        dot.attr("graph", splines="ortho", nodesep="2", color=self.theme["outline_color"],
+                 fontsize=self.theme["font_size"], fontcolor=self.theme["font_color"], fontname=self.theme["font_name"])
+        dot.attr("node", shape="box", style="filled", margin="0,0", fillcolor=self.theme["fill_color"],
+                 color=self.theme["outline_color"],
+                 fontsize=self.theme["font_size"], fontcolor=self.theme["font_color"], fontname=self.theme["font_name"])
+        dot.attr("edge", style="doted", color=self.theme["outline_color"],
+                 fontsize=self.theme["font_size"], fontcolor=self.theme["font_color"], fontname=self.theme["font_name"])
 
         for k, n in self.nodes.items():
             label = "<tr><td cellpadding='10'><b>{}</b></td></tr>".format(n.title)

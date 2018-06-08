@@ -26,10 +26,7 @@ Refs:
     Tensor class code
     @ E:\toolkits.win\anaconda3-5.1.0\envs\dlwin36\Lib\site-packages\tensorflow\python\framework\ops.py
 """
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
+from __future__ import absolute_import, division, print_function
 import tensorflow as tf
 
 from ww import builder_tf

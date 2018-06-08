@@ -7,11 +7,7 @@ Written by Phil Ferriere
 
 Licensed under the MIT License
 """
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
+from __future__ import absolute_import, division, print_function, unicode_literals
 import tensorflow as tf
 
 from .graph import DirectedGraph
@@ -20,13 +16,20 @@ from .layer import Layer
 # Mapping framework specific names to internal names
 TF_OP_MAP = {
     "Add": "add",
+    "ArgMax": "argmax",
+    "AvgPool": "avgpool",
     "Biases": "ignore", # "ignore", "biases",
     "BiasAdd": "biasadd",
     "ConcatV2": "concat",
     "ConcatIgnore": "ignore", # "ignore", "concatignore",
+    "Const": "ignore",
     "Conv2D": "conv",
     "Dropout": "dropout",
     "DropoutIgnore": "ignore", # "ignore", "dropoutignore",
+    "FC": "fc",
+    "Flatten": "flatten",
+    "FlattenIgnore": "ignore", # "ignore", "flattenignore",
+    "FusedBatchNorm": "bn",
     "MaxPool": "maxpool",
     "Mean": "mean",
     "MeanIgnore": "ignore", # "ignore", "meanignore"
@@ -34,15 +37,17 @@ TF_OP_MAP = {
     "PadIgnore": "ignore", # "ignore", "padignore"
     "Placeholder": "data",
     "Relu": "relu",
+    "Softmax": "softmax",
     "Squeeze": "squeeze",
-    "Weights": "ignore" # "ignore", "weights"
+    "Weights": "ignore", # "ignore", "weights"
 }
 
 TF_NAME_MAP = {
     "Add": "+",
+    "FusedBatchNorm": "BatchNorm",
     "Conv2D": "Conv",
     "ConcatV2": "Concat",
-    "Placeholder": "Data"
+    "Placeholder": "Data",
 }
 
 # Nodes to prune
@@ -66,9 +71,11 @@ TF_FOLD_RULES = {
 
 # Sequences of layers to group together
 TF_GROUP_RULES = [
-    "linear/relu/dropout",
-    "linear/relu",
+    "fc/relu/dropout",
+    "fc/relu",
+    "fc/softmax",
     "conv/bn/relu",
+    "conv/relu/bn",
     "conv/relu",
     "conv/bn",
 ]
@@ -121,12 +128,19 @@ def build_tf_graph(tfgraph, sess, output, verbose=False):
                 op = "Dropout"
             else:
                 op = "DropoutIgnore"
+        elif "flatten" in node.name.lower():
+            if "strided_slice" in node.name.lower() or "/shape" in node.name.lower():
+                op = "FlattenIgnore"
+            else:
+                op = "Flatten"
         elif "paddings" in node.name.lower():
             op = "PadIgnore"
         elif "reduction_indices" in node.name.lower():
             op = "MeanIgnore"
         elif "concat/axis" in node.name.lower():
             op = "ConcatIgnore"
+        elif "dense" in node.name.lower() and "matmul" in node.name.lower():
+            op = "FC"
         else:
             op = node.op
         name = op
@@ -152,7 +166,7 @@ def build_tf_graph(tfgraph, sess, output, verbose=False):
             kernel_shape = tf.graph_util.tensor_shape_from_node_def_name(tfgraph, node.input[1])
             kernel_shape = [int(a) for a in kernel_shape]
             params["kernel_shape"] = kernel_shape[0:2]
-        elif op == "maxpool":
+        elif op == "maxpool" or op == "avgpool":
             # 2/ the stride used by pooling layers
             # See https://stackoverflow.com/questions/44124942/how-to-access-values-in-protos-in-tensorflow
             if 'ksize' in node.attr.keys():

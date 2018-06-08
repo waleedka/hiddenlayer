@@ -1,5 +1,5 @@
 """
-litegraph_pytorch.py
+pytorch_graph_demo.py
 
 PyTorch graphs
 
@@ -7,12 +7,7 @@ Written by Waleed Abdulla
 
 Licensed under the MIT License
 """
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
-from graph import DirectedGraph
-from layer import Layer
+from __future__ import absolute_import, division, print_function
 
 # Requires PyTorch 0.4
 import torch
@@ -20,7 +15,7 @@ import torchvision.models
 from distutils.version import LooseVersion
 assert LooseVersion(torch.__version__) >= LooseVersion("0.4")
 
-from builder_pytorch import build_pytorch_graph
+from ww import builder_pytorch
 
 #
 # VGG 16
@@ -30,7 +25,7 @@ from builder_pytorch import build_pytorch_graph
 model = torchvision.models.vgg16_bn()
 
 # Build graph
-dg = build_pytorch_graph(model, torch.zeros([1, 3, 224, 224]), verbose=True)
+dg = builder_pytorch.build_pytorch_graph(model, torch.zeros([1, 3, 224, 224]), verbose=True)
 
 # kind                      scopeName                                  inputs -> outputs
 # onnx::Conv                VGG/Sequential[features]/Conv2d[0]         [0, 1, 2] -> [85]
@@ -87,7 +82,7 @@ dg = build_pytorch_graph(model, torch.zeros([1, 3, 224, 224]), verbose=True)
 # onnx::Gemm                VGG/Sequential[classifier]/Linear[6]       [188, 83, 84] -> [190]
 
 # Draw graph
-dg.draw_graph(simplify=True, output_shapes=False, verbose=True)
+dg.draw_graph_html(simplify=True, output_shapes=False, verbose=True)
 
 # Replacing sequence [/<Layer: op: linear         , name: Linear         , id: VGG/Sequential[classifier]/Linear[0]/outputs/182  , title: Linear         , repeat:  1, params: {'alpha': 1.0, 'beta': 1.0, 'broadcast': 1, 'transB': 1}>/<Layer: op: relu           , name: Relu           , id: VGG/Sequential[classifier]/ReLU[1]/outputs/183    , title: Relu           , repeat:  1>/<Layer: op: dropout        , name: Dropout        , id: VGG/Sequential[classifier]/Dropout[2]/outputs/184/185, title: Dropout        , repeat:  1, params: {'is_test': 0, 'ratio': 0.5}                      >] with combo <Layer: op: linear/relu/dropout, name: Linear/Relu/Dropout, id:                               16659341645538463734, title: Linear/Relu/Dropout, repeat:  1>
 # Replacing sequence [/<Layer: op: linear         , name: Linear         , id: VGG/Sequential[classifier]/Linear[3]/outputs/186  , title: Linear         , repeat:  1, params: {'alpha': 1.0, 'beta': 1.0, 'broadcast': 1, 'transB': 1}>/<Layer: op: relu           , name: Relu           , id: VGG/Sequential[classifier]/ReLU[4]/outputs/187    , title: Relu           , repeat:  1>/<Layer: op: dropout        , name: Dropout        , id: VGG/Sequential[classifier]/Dropout[5]/outputs/188/189, title: Dropout        , repeat:  1, params: {'is_test': 0, 'ratio': 0.5}                      >] with combo <Layer: op: linear/relu/dropout, name: Linear/Relu/Dropout, id:                                 183353858164065529, title: Linear/Relu/Dropout, repeat:  1>
@@ -141,10 +136,10 @@ dg.list_layers()
 model = torchvision.models.resnet50()
 
 # Build graph
-dg = build_pytorch_graph(model, torch.zeros([1, 3, 224, 224]), verbose=False)
+dg = builder_pytorch.build_pytorch_graph(model, torch.zeros([1, 3, 224, 224]), verbose=False)
 
 # Draw graph
-dg.draw_graph(simplify=True, output_shapes=False, verbose=False)
+dg.draw_graph_html(simplify=True, output_shapes=False, verbose=False)
 
 # List layers in the graph
 print("Layers:")
