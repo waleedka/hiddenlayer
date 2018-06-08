@@ -6,7 +6,7 @@ This version of `weightwatcher` works on Windows and Ubuntu. It supports PyTorch
 - General stuff
 	- [ ] Add Ubuntu yml file to env setup section
 	- [ ] Add Ubuntu setup instructions for GraphViz
-	- [ ] Add `tf_watch_demo.ipynb` and `img/tf_watch.png`
+	- [ ] Add `img/tf_watch.png` after [this issue](https://github.com/waleedka/weightwatcher/issues/4) is fixed
 	- [ ] Replace sample weightwatcher PNGs with animated GIFs
   
 ## Environment Setup
