@@ -1,11 +1,14 @@
 """
-tf_watch_demo.py
+dev_tf_watch_demo.py
 
 WeightWatcher demo (TensorFlow) to visualize training progress
 
 Written by Phil Ferriere
 
 Licensed under the MIT License
+
+Note:
+    This file is here for dev purposes only (to run the core notebook code through a debugger, if necessary) 
 """
 from __future__ import absolute_import, division, print_function
 import sys

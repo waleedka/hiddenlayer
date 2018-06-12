@@ -18,28 +18,28 @@ TF_OP_MAP = {
     "Add": "add",
     "ArgMax": "argmax",
     "AvgPool": "avgpool",
-    "Biases": "ignore", # "ignore", "biases",
+    "Biases": "ignore",
     "BiasAdd": "biasadd",
     "ConcatV2": "concat",
-    "ConcatIgnore": "ignore", # "ignore", "concatignore",
+    "ConcatIgnore": "ignore",
     "Const": "ignore",
     "Conv2D": "conv",
     "Dropout": "dropout",
-    "DropoutIgnore": "ignore", # "ignore", "dropoutignore",
+    "DropoutIgnore": "ignore",
     "FC": "fc",
     "Flatten": "flatten",
-    "FlattenIgnore": "ignore", # "ignore", "flattenignore",
+    "FlattenIgnore": "ignore",
     "FusedBatchNorm": "bn",
     "MaxPool": "maxpool",
     "Mean": "mean",
-    "MeanIgnore": "ignore", # "ignore", "meanignore"
+    "MeanIgnore": "ignore",
     "Pad": "pad",
-    "PadIgnore": "ignore", # "ignore", "padignore"
+    "PadIgnore": "ignore",
     "Placeholder": "data",
     "Relu": "relu",
     "Softmax": "softmax",
     "Squeeze": "squeeze",
-    "Weights": "ignore", # "ignore", "weights"
+    "Weights": "ignore",
 }
 
 TF_NAME_MAP = {

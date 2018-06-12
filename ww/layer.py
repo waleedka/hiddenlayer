@@ -21,25 +21,25 @@ class Layer():
         name: Name to display
         op: Framework-agnostic operation name.
         """
-        self.id = uid # uid: 'VGG/Sequential[features]/Conv2d[0]/outputs/85'
-        self.name = name # name: 'Conv'
-        self.op = op # name: 'conv'
+        self.id = uid
+        self.name = name
+        self.op = op
         self.repeat = 1
         if output_shape and type(output_shape) is not str:
             output_shape = str(output_shape)
         self.output_shape = output_shape
-        self.params = params if params else {} # params: {'dilations': [1, 1], 'group': 1, 'kernel_shape': [3, 3], 'pads': [1, 1, 1, 1], 'strides': [1, 1]}
+        self.params = params if params else {}
         self._caption = ""
 
     @property
     def title(self):
         # Default
-        title = self.name # title: 'Conv'
+        title = self.name
 
         if "kernel_shape" in self.params:
             # Kernel
-            kernel = self.params["kernel_shape"]  # kernel: [3, 3]
-            title += "x".join(map(str, kernel)) # title: 'Conv3x3'
+            kernel = self.params["kernel_shape"]
+            title += "x".join(map(str, kernel))
         #         # Transposed
         #         if node.transposed:
         #             name = "Transposed" + name

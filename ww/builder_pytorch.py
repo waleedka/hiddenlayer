@@ -116,21 +116,21 @@ def build_pytorch_graph(model, args, input_names=None, verbose=False):
         dump_pytorch_graph(graph)
 
     # Loop through nodes and build graph layers
-    for node in graph.nodes():  # node: %85 : Float(1, 64, 224, 224) = onnx::Conv[dilations=[1, 1], group=1, kernel_shape=[3, 3], pads=[1, 1, 1, 1], strides=[1, 1]](%0, %1, %2), scope: VGG/Sequential[features]/Conv2d[0]
+    for node in graph.nodes():
         # Op
-        op = node.kind().replace("onnx::", "")  # op: 'Conv'
-        name = op  # name: 'Conv'
+        op = node.kind().replace("onnx::", "")
+        name = op
 
         # Map to internal name
-        op = PYTORCH_OP_MAP.get(op, op)  # op: 'conv'
-        name = PYTORCH_NAME_MAP.get(name, name)  # name: 'Conv'
+        op = PYTORCH_OP_MAP.get(op, op)
+        name = PYTORCH_NAME_MAP.get(name, name)
 
         # Parameters
-        params = {k: node[k] for k in node.attributeNames()}  # params: {'dilations': [1, 1], 'group': 1, 'kernel_shape': [3, 3], 'pads': [1, 1, 1, 1], 'strides': [1, 1]}
+        params = {k: node[k] for k in node.attributeNames()} 
 
         # Inputs/outputs
-        inputs = [i.unique() for i in node.inputs()]  # inputs: <class 'list'>: [0, 1, 2]
-        outputs = [o.unique() for o in node.outputs()]  # outputs: <class 'list'>: [85]
+        inputs = [i.unique() for i in node.inputs()]
+        outputs = [o.unique() for o in node.outputs()]
 
         # Add layer
         layer = Layer(uid=pytorch_id(node), name=name, op=op, params=params)
@@ -138,7 +138,7 @@ def build_pytorch_graph(model, args, input_names=None, verbose=False):
 
         # Add edges
         for target_node in graph.nodes():
-            target_inputs = [i.unique() for i in target_node.inputs()]  # target_inputs: <class 'list'>: [0, 1, 2]
-            if set(outputs) & set(target_inputs):  # outputs: <class 'list'>: [85], target_inputs: <class 'list'>: [85, 3, 4, 5, 6]
-                dg.add_edge_by_id(pytorch_id(node), pytorch_id(target_node))  # pytorch_id(node): 'VGG/Sequential[features]/Conv2d[0]/outputs/85', pytorch_id(target_node): 'VGG/Sequential[features]/BatchNorm2d[1]/outputs/86/87/88/batch_norm_dead_output-89/batch_norm_dead_output-90'
+            target_inputs = [i.unique() for i in target_node.inputs()]
+            if set(outputs) & set(target_inputs):
+                dg.add_edge_by_id(pytorch_id(node), pytorch_id(target_node))
     return dg
