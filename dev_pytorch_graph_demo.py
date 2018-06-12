@@ -1,11 +1,14 @@
 """
-pytorch_graph_demo.py
+dev_pytorch_graph_demo.py
 
 PyTorch graphs
 
 Written by Waleed Abdulla
 
 Licensed under the MIT License
+
+Note:
+    This file is here for dev purposes only (to run the core notebook code through a debugger, if necessary) 
 """
 from __future__ import absolute_import, division, print_function
 

@@ -1,11 +1,14 @@
 """
-pytorch_watch_demo.py
+dev_pytorch_watch_demo.py
 
 WeightWatcher demo (PyTorch) to visualize training progress
 
 Written by Waleed Abdulla
 
 Licensed under the MIT License
+
+Note:
+    This file is here for dev purposes only (to run the core notebook code through a debugger, if necessary) 
 """
 from __future__ import absolute_import
 from __future__ import division
