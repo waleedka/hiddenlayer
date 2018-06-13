@@ -27,7 +27,8 @@ from matplotlib.collections import PolyCollection
 ###############################################################################
 
 def to_data(value):
-    """Converts PyTorch tensors to numpy arrays or a scalar."""
+    """Standardize data types. Converts PyTorch tensors to Numpy arrays,
+    and Numpy scalars to Python scalars."""
     if value.__class__.__module__.startswith("torch"):
         import torch
         if isinstance(value, torch.nn.parameter.Parameter):
@@ -39,6 +40,9 @@ def to_data(value):
         # If 0-dim array, convert to scalar
         if not value.shape:
             value = value.item()
+    # Convert Numpy scalar types to Python types
+    if value.__class__.__module__ == "numpy" and value.__class__.__name__ != "ndarray":
+        value = value.item()
     return value
 
 
