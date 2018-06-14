@@ -152,7 +152,7 @@ def build_tf_graph(tfgraph, sess, output, verbose=False):
         inputs = node.input
 
         # Shape
-        shape = tf.graph_util.tensor_shape_from_node_def_name(tfgraph, node.name)
+        shape = tf.graph_util.tensor_shape_from_node_def_name(tfgraph, node.name).as_list()
 
         # Parameters
         # At this stage, we really only care about two parameters:

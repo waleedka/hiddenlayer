@@ -25,8 +25,9 @@ class Layer():
         self.name = name
         self.op = op
         self.repeat = 1
-        if output_shape and type(output_shape) is not str:
-            output_shape = str(output_shape)
+        if output_shape:
+            assert isinstance(output_shape, (tuple, list)),\
+            "output_shape must be a tuple or list but received {}".format(type(output_shape))
         self.output_shape = output_shape
         self.params = params if params else {}
         self._caption = ""

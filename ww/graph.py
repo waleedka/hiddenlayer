@@ -55,13 +55,9 @@ class DirectedGraph():
         self.nodes[id] = node
 
     def add_edge(self, node1, node2, label=None):
-        if label and type(label) is not str:
-            label = str(label)
         self.edges.append((self.id(node1), self.id(node2), label))
 
     def add_edge_by_id(self, vid1, vid2, label=None):
-        if label and type(label) is not str:
-            label = str(label)
         self.edges.append((vid1, vid2, label))
 
     def outgoing(self, node):
@@ -274,6 +270,8 @@ class DirectedGraph():
         for a, b, label in self.edges:
             if output_shapes is False:
                 label = None
+            if label:
+                label = "x".join(map(str, label))
             dot.edge(str(a), str(b), label)
         return dot
 
@@ -326,6 +324,8 @@ class DirectedGraph():
         for a, b, label in self.edges:
             if output_shapes is False:
                 label = None
+            if label:
+                label = "x".join(map(str, label))
             dot.edge(str(a), str(b), label)
         return dot
 
