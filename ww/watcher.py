@@ -23,7 +23,7 @@ from matplotlib.collections import PolyCollection
 
 
 ###############################################################################
-# Misc logging functions
+# Misc functions
 ###############################################################################
 
 def to_data(value):
@@ -36,7 +36,7 @@ def to_data(value):
         if isinstance(value, torch.Tensor):
             if value.requires_grad:
                 value = value.detach()
-            value = value.numpy().copy()
+            value = value.cpu().numpy().copy()
         # If 0-dim array, convert to scalar
         if not value.shape:
             value = value.item()
