@@ -149,7 +149,7 @@ class Watcher():
         plt.show()
     
     def __getattribute__(self, name):
-        if name in ["plot", "image_reel"] and self._in_context:
+        if name in ["plot", "image_reel", "hist"] and self._in_context:
             def wrapper(*args, **kwargs):
                 self.calls.append((name, args, kwargs))
             return wrapper
@@ -233,6 +233,15 @@ class Watcher():
                 ax.imshow(image)
 
     def hist(self, keys=None, title="", fig=None, subplot_spec=None):
+        """Draw a series of histograms of the selected keys over different
+        training steps.
+        """
+        # TODO: Use global theme instead
+        theme = {
+            "hist_outline_color": [0, 0, 0.9],
+            "hist_color": [0.5, 0, 0.9],
+        }
+
         limit = 10  # max steps to show
 
         # Steps: extract from log
@@ -261,7 +270,8 @@ class Watcher():
 
         # Compute histograms
         verts = []
-        colors = []
+        area_colors = []
+        edge_colors = []
         for i, s in enumerate(steps[-limit:]):
             hist, edges = np.histogram(values[s])
             # X is bin centers
@@ -284,19 +294,17 @@ class Watcher():
             y_min = np.minimum(y_min, y.min())
             y_max = np.maximum(y_max, y.max())
 
-            ax.plot(x, z, y, color=[0, 0, .9, (i+1)/limit])
-            # verts.append([(x[0], 0)] + list(zip(x, y)) + [(x[-1], 0)])
+            alpha = 0.8 * (i+1) / min(limit, len(steps))
             verts.append(list(zip(x, y)))
-            # verts = [[(-.2, 0), (-.2, 30), (0, 50), (0.2, 20), (0.2, 0)]]
-            colors.append(np.array([0.4, 0, .9, (i+1)/limit]))
+            area_colors.append(np.array(theme["hist_color"] + [alpha]))
+            edge_colors.append(np.array(theme["hist_outline_color"] + [alpha]))
 
-        poly = PolyCollection(verts, facecolors=colors)
+        poly = PolyCollection(verts, facecolors=area_colors, edgecolors=edge_colors)
         ax.add_collection3d(poly, zs=steps[-limit:], zdir='y')
 
         ax.set_xlim(x_min, x_max)
         ax.set_ylim(steps[-1], steps[-limit:][0])
         ax.set_zlim(y_min, y_max)
-
-        # poly.set_alpha(0.7)
+        ax.set_title(key)
 
 
