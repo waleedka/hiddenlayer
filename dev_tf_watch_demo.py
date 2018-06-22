@@ -98,35 +98,52 @@ w.legend={"loss": "Training Loss", "accuracy": "Training Accuracy"}
 # Run the initializer
 sess.run(tf.global_variables_initializer())
 
+# Look up the names of the 'conv1' params
+tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, 'conv1')
+
+# [<tf.Variable 'conv1/conv2d/kernel:0' shape=(3, 3, 3, 16) dtype=float32_ref>,
+#  <tf.Variable 'conv1/conv2d/bias:0' shape=(16,) dtype=float32_ref>,
+#  <tf.Variable 'conv1/batch_normalization/gamma:0' shape=(16,) dtype=float32_ref>,
+#  <tf.Variable 'conv1/batch_normalization/beta:0' shape=(16,) dtype=float32_ref>,
+#  <tf.Variable 'conv1/conv2d_1/kernel:0' shape=(3, 3, 16, 16) dtype=float32_ref>,
+#  <tf.Variable 'conv1/conv2d_1/bias:0' shape=(16,) dtype=float32_ref>,
+#  <tf.Variable 'conv1/batch_normalization_1/gamma:0' shape=(16,) dtype=float32_ref>,
+#  <tf.Variable 'conv1/batch_normalization_1/beta:0' shape=(16,) dtype=float32_ref>]
+
 # Run training loop on GPU
-epochs = 20
-_best_accuracy = -1
-with tf.device('/gpu:0'): # Set to '/cpu:0' if you don't have a GPU
+epochs = 4
+# use_plots = True
+# if use_plots is False:
+#     _best_accuracy = -1
+with tf.device('/gpu:0'):  # Set to '/cpu:0' if you don't have a GPU
     for epoch in range(epochs):
 
         batches, _ = divmod(cifar10.train_len, batch_size)
         for batch in range(batches):
 
             # Fetch training samples
-            _input = cifar10.train_data[batch*batch_size : (batch+1)*batch_size]
-            _output = cifar10.train_labels[batch*batch_size : (batch+1)*batch_size]
+            _input = cifar10.train_data[batch * batch_size: (batch + 1) * batch_size]
+            _output = cifar10.train_labels[batch * batch_size: (batch + 1) * batch_size]
 
             # Train model
             train_ops = [g_step, optimizer, loss, accuracy]
-            step, _, _loss, _accuracy = sess.run(train_ops, feed_dict={inputs : _input, outputs : _output})
+            step, _, _loss, _accuracy = sess.run(train_ops, feed_dict={inputs: _input, outputs: _output})
 
             # Print stats
             if batch & batch % 100 == 0:
-                # BUBUG - Generates many `No handles with labels found to put in legend.` matplotlib  messages
-                # w.step(step, loss=_loss, accuracy=_accuracy)
-                # with w:
-                #     w.plot(["loss"])
-                #     w.plot(["accuracy"])
-                if _accuracy > _best_accuracy:
-                    _best_accuracy = _accuracy
-                    status_msg = '\r>>Step: {:>5} - Epoch: {:>2}/{:>2} - best batch acc: {:.4f} - loss: {:.4f}'
-                    sys.stdout.write(status_msg.format(step, epoch+1, epochs, _accuracy, _loss))
-                    sys.stdout.flush()
+                _weights = tf.get_default_graph().get_tensor_by_name('conv1/conv2d/kernel:0').eval(session=sess)
+                w.step(step, loss=_loss, accuracy=_accuracy, conv1_weights=_weights)
+                with w:
+                    w.plot(["loss"])
+                    w.plot(["accuracy"])
+                    w.hist(["conv1_weights"])
+#                 if use_plots:
+#                 else:
+#                     if _accuracy > _best_accuracy:
+#                         _best_accuracy = _accuracy
+#                         status_msg = '\r>>Step: {:>5} - Epoch: {:>2}/{:>2} - best batch acc: {:.4f} - loss: {:.4f}'
+#                         sys.stdout.write(status_msg.format(step, epoch+1, epochs, _accuracy, _loss))
+#                         sys.stdout.flush()
 
 # Terminate training session
 sess.close()
