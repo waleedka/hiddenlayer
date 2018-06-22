@@ -10,21 +10,19 @@ Licensed under the MIT License
 Note:
     This file is here for dev purposes only (to run the core notebook code through a debugger, if necessary) 
 """
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+from __future__ import absolute_import, division, print_function
 
-# Requires PyTorch 0.4
+import numpy as np
 import torch
 import torchvision.models
 import torch.nn as nn
 from torchvision import datasets, transforms
 from distutils.version import LooseVersion
-assert LooseVersion(torch.__version__) >= LooseVersion("0.4")
-
-import numpy as np
 
 from ww import builder_pytorch, watcher
+
+# Requires PyTorch 0.4
+assert LooseVersion(torch.__version__) >= LooseVersion("0.4")
 
 #
 # Visualize Training Progress
@@ -38,6 +36,7 @@ test_dataset = datasets.CIFAR10('datasets', train=False, download=True, transfor
 train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=50, shuffle=True)
 testloader = torch.utils.data.DataLoader(test_dataset, batch_size=50, shuffle=True)
 
+# Print dataset stats
 watcher.show("train_dataset.data", train_dataset.train_data)
 watcher.show("train_dataset.labels", train_dataset.train_labels)
 watcher.show("test_dataset.data", test_dataset.test_data)
@@ -48,9 +47,7 @@ watcher.show("test_dataset.labels", test_dataset.test_labels)
 # test_dataset.data	Tensor  uint8 (10000, 32, 32, 3)  min: 0.000  max: 255.000
 # test_dataset.labels	list    len: 10000  [3, 8, 8, 0, 6, 6, 1, 6, 3, 1, 0, 9, 5, 7, 9, 8, 5, 7, 8, 6, 7, 0, 4, 9, 5, 2, 4, 0, 9, 6, 6, 5, 4, 5, 9, 2, 4, 1, 9, 5, 4, 6, 5, 6, 0, 9, 3, 9, 7, 6]
 
-# TODO: Moving model to GPU breaks grph drawing. Investigate
-# device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-device = "cpu"
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 # Simple Convolutional Network
 class CifarModel(nn.Module):
@@ -101,7 +98,7 @@ model = CifarModel().to(device)
 criterion = torch.nn.CrossEntropyLoss()
 optimizer = torch.optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
 
-dg = builder_pytorch.build_pytorch_graph(model, torch.zeros([1, 3, 32, 32]), verbose=False)
+dg = builder_pytorch.build_pytorch_graph(model, torch.zeros([1, 3, 32, 32]).to(device), verbose=False)
 dg.draw_graph_html(simplify=True, output_shapes=False, verbose=False)
 
 step = 0
@@ -128,11 +125,12 @@ for epoch in range(2):
         # print statistics
         if step and step % 100 == 0:
             # Compute accuracy
-            pred_labels = np.argmax(outputs.detach().numpy(), 1)
-            accuracy = np.mean(pred_labels == labels.detach().numpy())
+            pred_labels = np.argmax(outputs.detach().cpu().numpy(), 1)
+            accuracy = np.mean(pred_labels == labels.detach().cpu().numpy())
 
-            w.step(step, loss=loss, accuracy=accuracy)
+            w.step(step, loss=loss, accuracy=accuracy, conv1_weights=model.features[0].weight)
             with w:
                 w.plot(["loss"])
                 w.plot(["accuracy"])
+                w.hist(["conv1_weights"])
         step += 1
