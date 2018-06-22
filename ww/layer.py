@@ -66,7 +66,7 @@ class Layer():
         args = (self.op, self.name, self.id, self.title, self.repeat)
         f = "<Layer: op: {:15}, name: {:15}, id: {:50}, title: {:15}, repeat: {:2}"
         if self.output_shape:
-            args += (self.output_shape,)
+            args += (str(self.output_shape),)
             f += ", shape: {:10}"
         if self.params:
             args += (str(self.params),)
