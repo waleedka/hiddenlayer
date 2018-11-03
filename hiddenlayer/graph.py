@@ -195,17 +195,22 @@ class Graph():
         self.edges.append((vid1, vid2, label))
 
     def outgoing(self, node):
-        """Returns IDs of nodes connecting out of the given node."""
-        # TODO: update to return nodes rather than IDs
-        node = node if isinstance(node, list) else [node]
-        node_ids = [self.id(n) for n in node]
-        outgoing = [e[1] for e in self.edges if e[0] in node_ids]
-        return list(set(outgoing))
+        """Returns nodes connecting out of the given node (or list of nodes)."""
+        nodes = node if isinstance(node, list) else [node]
+        node_ids = [self.id(n) for n in nodes]
+        # Find edges outgoing from this group but not incoming to it
+        outgoing = [self[e[1]] for e in self.edges
+                    if e[0] in node_ids and e[1] not in node_ids]
+        return outgoing
 
     def incoming(self, node):
-        """Returns IDs of nodes connecting to the given node."""
-        # TODO: update to return nodes rather than IDs
-        return [e[0] for e in self.edges if e[1] == self.id(node)]
+        """Returns nodes connecting to the given node (or list of nodes)."""
+        nodes = node if isinstance(node, list) else [node]
+        node_ids = [self.id(n) for n in nodes]
+        # Find edges incoming to this group but not outgoing from it
+        incoming = [self[e[0]] for e in self.edges
+                    if e[1] in node_ids and e[0] not in node_ids]
+        return incoming
 
     def siblings(self, node):
         """Returns all nodes that share the same parent (incoming node) with
@@ -214,8 +219,8 @@ class Graph():
         incoming = self.incoming(node)
         # TODO: Not handling the case of multiple incoming nodes yet
         if len(incoming) == 1:
-            incoming = self[incoming[0]]
-            siblings = self[self.outgoing(incoming)]
+            incoming = incoming[0]
+            siblings = self.outgoing(incoming)
             return siblings
         else:
             return [node]
@@ -245,12 +250,11 @@ class Graph():
         # Add new node and edges
         if not collapse:
             self.add_node(node)
-        for k in self.incoming(nodes[0]):
-            in_node = self.nodes[k]
+        for in_node in self.incoming(nodes):
             # TODO: it's not clean to have to check if node has output_shape
             self.add_edge(in_node, node, in_node.output_shape if hasattr(in_node, "output_shape") else None)
-        for k in self.outgoing(nodes[-1]):
-            self.add_edge(node, self[k], node.output_shape if hasattr(node, "output_shape") else None)
+        for out_node in self.outgoing(nodes):
+            self.add_edge(node, out_node, node.output_shape if hasattr(node, "output_shape") else None)
         # Remove the old nodes
         for n in nodes:
             if collapse and n == node:

@@ -92,12 +92,12 @@ class TestGraph(unittest.TestCase):
         g.add_edge("a", "b")
         g.add_edge("b", "c")
 
-        self.assertEqual(g[g.incoming("b")[0]], "a")
-        self.assertEqual(g[g.outgoing("b")[0]], "c")
+        self.assertEqual(g.incoming("b")[0], "a")
+        self.assertEqual(g.outgoing("b")[0], "c")
         g.replace(["b"], "x")
         self.assertEqual(sorted(list(g.nodes.values())), sorted(["a", "c", "x"]))
-        self.assertEqual(g[g.incoming("x")[0]], "a")
-        self.assertEqual(g[g.outgoing("x")[0]], "c")
+        self.assertEqual(g.incoming("x")[0], "a")
+        self.assertEqual(g.outgoing("x")[0], "c")
 
 
 class TestPatterns(unittest.TestCase):
@@ -219,7 +219,7 @@ class TestTransforms(unittest.TestCase):
 
         t = ht.Rename(op=r"a", to="bbb")
         t.apply(g)
-        self.assertEqual(a.op, "bbb")
+        self.assertEqual(g["a"].op, "bbb")
 
         t = ht.Rename(op=r"b(.*)", to=r"x\1")
         t.apply(g)
@@ -242,7 +242,7 @@ class TestTransforms(unittest.TestCase):
 
         t = ht.Fold("a > b", "ab")
         t.apply(g)
-        self.assertEqual(g[g.incoming(c)[0]].op, "ab")
+        self.assertEqual(g.incoming(g["c"])[0].op, "ab")
 
     def test_parallel_fold(self):
         g = hl.Graph()
@@ -264,7 +264,7 @@ class TestTransforms(unittest.TestCase):
 
         t = ht.Fold("((b > c) | d) > e", "bcde")
         t.apply(g)
-        self.assertEqual(g[g.outgoing(a)[0]].op, "bcde")
+        self.assertEqual(g.outgoing(g["a"])[0].op, "bcde")
 
     def test_prune(self):
         g = hl.Graph()

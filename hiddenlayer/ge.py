@@ -89,7 +89,7 @@ class NodePattern():
         if isinstance(node, list):
             return [], None
         if self.op == node.op:
-            following = graph[graph.outgoing(node)]
+            following = graph.outgoing(node)
             if len(following) == 1:
                 following = following[0]
             return [node], following
