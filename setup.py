@@ -1,19 +1,19 @@
 from setuptools import setup
 
 setup(
-    name = 'weightwatcher',
-    packages = ['ww'],
+    name = 'HiddenLayer',
+    packages = ['hiddenlayer'],
     version = '0.1',
     license="MIT",
     description = 'A light-weight alternative to TensorBoard for smaller deep learning projects',
     author = 'Waleed Abdulla <waleed.abdulla@gmail.com>, Phil Ferriere <pferriere@hotmail.com>',
-    url = 'https://github.com/waleedka/weightwatcher',
+    url = 'https://github.com/waleedka/hiddenlayer',
     classifiers = [
     # How mature is this project? Common values are
     #   3 - Alpha
     #   4 - Beta
     #   5 - Production/Stable
-    'Development Status :: 3 - Alpha',
+    'Development Status :: 4 - Beta',
 
     # Indicate who your project is intended for
     'Intended Audience :: Developers',

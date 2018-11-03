@@ -1,6 +1,4 @@
 """
-tf_cifar10.py
-
 Wrapper for CIFAR-10 dataset and TF model.
 
 Written by Phil Ferriere
@@ -26,9 +24,10 @@ NUM_CLASSES = 10
 NUM_TRAIN_SAMPLES = 50000
 NUM_TEST_SAMPLES = 10000
 CIFAR10_URL = 'https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz'
-DATA_FOLDER = './datasets'
+DATA_FOLDER = './test_data'
 CIFAR10_FOLDER = os.path.join(DATA_FOLDER, 'cifar-10-batches-py')
 CIFAR10_TARBALL = os.path.join(DATA_FOLDER, CIFAR10_URL.split('/')[-1])
+
 
 class CIFAR10():
     """TF data handler for CIFAR-10 dataset and model."""
@@ -221,7 +220,7 @@ class CIFAR10():
                 os.makedirs(DATA_FOLDER)
 
             def _progress(count, block_size, total_size):
-                status_msg = '\r>> Downloading {} {:>3}%'
+                status_msg = '\r>> Downloading {} {:>3}%   '
                 sys.stdout.write(status_msg.format(CIFAR10_TARBALL, float(count * block_size) / total_size * 100.0))
                 sys.stdout.flush()
 

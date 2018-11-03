@@ -1,0 +1,284 @@
+import itertools
+import math
+import numpy as np
+from graphviz import Digraph
+import matplotlib
+import matplotlib.pyplot as plt
+import IPython.display
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib.collections import PolyCollection
+
+
+DEFAULT_THEME = {
+    "fig_width": 12,  # inches
+}
+
+
+def norm(image):
+    return (image - image.min()) / (image.max() - image.min())
+
+
+# TODO: Move inside Canvas and merge with draw_images
+def show_images(images, titles=None, cols=5, **kwargs):
+    """
+    images: A list of images. I can be either:
+        - A list of Numpy arrays. Each array represents an image.
+        - A list of lists of Numpy arrays. In this case, the images in
+          the inner lists are concatentated to make one image.
+    """
+    # The images param can be a list or an array
+
+    titles = titles or [""] * len(images)
+    rows = math.ceil(len(images) / cols)
+    height_ratio = 1.2 * (rows/cols) * (0.5 if type(images[0]) is not np.ndarray else 1)
+    plt.figure(figsize=(11, 11 * height_ratio))
+    i = 1
+    for image, title in zip(images, titles):
+        plt.subplot(rows, cols, i)
+        plt.axis("off")
+        # Is image a list? If so, merge them into one image.
+        if type(image) is not np.ndarray:
+            image = [norm(g) for g in image]
+            image = np.concatenate(image, axis=1)
+        else:
+            image = norm(image)
+        plt.title(title, fontsize=9)
+        plt.imshow(image, cmap="Greys_r", **kwargs)
+        i += 1
+    plt.tight_layout(h_pad=0, w_pad=0)
+
+
+###############################################################################
+# Canvas Class
+###############################################################################
+
+
+class Canvas():
+    
+    def __init__(self, file=None):
+        self._context = None
+        self.theme = DEFAULT_THEME
+        self.figure = None
+        self.backend = matplotlib.get_backend()
+        self.drawing_calls = []
+        self.file = file
+
+    def __enter__(self):
+        self._context = "build"
+        self.drawing_calls = []
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.render()
+
+    def render(self):
+        self._context = "run"
+        # Clear output
+        if 'inline' in self.backend:
+            IPython.display.clear_output(wait=True)
+            self.figure = None
+        
+        width = self.theme['fig_width']
+        if not self.figure:
+            self.figure = plt.figure(figsize=(width, width/3 * len(self.drawing_calls)))
+        self.figure.clear()
+
+        # Divide figure area by number of draw_*() calls we have
+        gs = matplotlib.gridspec.GridSpec(len(self.drawing_calls), 1)
+    
+        # Draw
+        for i, c in enumerate(self.drawing_calls):
+            getattr(self, c[0])(*c[1], **c[2], fig=self.figure, subplot_spec=gs[i])
+
+        # TODO: pause() allows the GUI to render but it's sluggish because it
+        # only has 0.1 seconds of CPU time at each step. A better solution would be to
+        # launch a separate process to render the GUI and pipe data to it.
+        plt.pause(0.1)
+        plt.show(block=False)
+        self.drawing_calls = []
+        self._context = None
+
+
+    def __getattribute__(self, name):
+        if name.startswith("draw_") and self._context != "run":
+            def wrapper(*args, **kwargs):
+                self.drawing_calls.append((name, args, kwargs))
+                if not self._context:
+                    self.render()
+            return wrapper
+        else:
+            return object.__getattribute__(self, name) 
+
+    def save(self, file_name):
+        self.figure.savefig(file_name)
+
+    def draw_plot(self, *metrics, labels=None,
+             title="", fig=None, subplot_spec=None):
+        """
+        metrics: One or more metrics parameters. Each represents the history
+            of one metric.
+        """
+        # Divide area into a grid
+        if subplot_spec is not None:
+            ax = self.figure.add_subplot(subplot_spec)
+        else:
+            ax = self.figure.add_subplot(1, 1, 1)
+
+        # Display
+        # TODO: Step should be at the figure level
+        ax.set_title("Step: {}".format(metrics[0].steps[-1]), fontsize=9)
+        for i, m in enumerate(metrics):
+            label = labels[i] if labels else m.name
+            ax.plot(m.steps, m.data, label=label)
+        ax.set_ylabel(title)
+        ax.legend()
+        ax.set_xlabel("Steps")
+        ax.xaxis.set_major_locator(plt.AutoLocator())
+
+
+    # TODO: not happy with how this works. Needs rewriting
+    def draw_images(self, *metrics, title="", fig=None, subplot_spec=None):
+        """Display a series of images at different time steps.
+        """        
+        # # Keep image values and filter out the rest
+        # def is_image(v):
+        #     return isinstance(v, np.ndarray) and v.ndim in (3, 4)  # TODO: 3 or 4?
+        # keys = list(filter(lambda k: is_image(values[k][0]), keys))
+        
+        # How many images to show
+        rows = len(metrics)
+        cols = 10  # TODO: make a param?
+
+        # Divide area into a grid
+        if subplot_spec is not None:
+            gs = matplotlib.gridspec.GridSpecFromSubplotSpec(rows, cols, subplot_spec=subplot_spec)
+        else:
+            gs = matplotlib.gridspec.GridSpec(rows, cols)
+        
+        for i, m in enumerate(metrics):
+            for j, image in enumerate(m.data[-cols:]):
+                ax = fig.add_subplot(gs[i, j])
+                ax.axis('off')
+#                 ax.set_title("step {}".format(step))
+                # if image.ndim == 4:
+                image = image[0]
+                ax.imshow(norm(image))
+
+    def draw_activations(self, keys=None, title="", fig=None, subplot_spec=None):
+        """Display a series of activations at different time steps.
+        """
+        # The feature dimension in conv layers. Typically dimension 1 in
+        # Pytorch and 3 in TensorFlow.
+        # TODO: change dynamically based on framework
+        feature_dim = 1  
+
+        # Steps: extract from history
+        steps = sorted(self.history.keys())
+        
+        # Keys: use provided value or scan the log and extract unique keys
+        keys = keys or set(itertools.chain(*[list(s.keys()) for s in self.history.values()]))
+        
+        # Values: Parse log into a dict of key: [list of values with None for missing values]
+        values = {}
+        for k in keys:
+            values[k] = [self.history[s].get(k) for s in steps]
+        
+        # Keep conv outputs and filter out the rest
+        # TODO: Handle other types of layes?
+        def is_conv_output(v):
+            return isinstance(v, np.ndarray) and v.ndim == 4
+        keys = list(filter(lambda k: is_conv_output(values[k][0]), keys))
+        if not keys:
+            raise ValueError("keys must include the key of an output of a conv layer")
+        
+        # Figure: use given figure or the current figure of pyplot
+        fig = fig or plt.gcf()
+
+        # TODO: input param should be just one key, not keys
+        key = keys[0]
+        values = values[key]
+
+        # How many to show
+        rows = min(4, values[0].shape[feature_dim])
+        cols = 10
+
+        # Divide area into a grid
+        if subplot_spec is not None:
+            gs = matplotlib.gridspec.GridSpecFromSubplotSpec(rows, cols, subplot_spec=subplot_spec)
+        else:
+            gs = matplotlib.gridspec.GridSpec(rows, cols)
+        
+        for s, weight in enumerate(values[-cols:]):
+            for r in range(rows):
+                ax = fig.add_subplot(gs[r, s])
+                ax.axis('off')
+                image = weight[r]
+                ax.set_title("step {}  shape: {}".format(s, weight.shape))
+                ax.imshow(norm(image), cmap="Greys_r")
+
+    def draw_hist(self, metric, title="", fig=None, subplot_spec=None):
+        """Draw a series of histograms of the selected keys over different
+        training steps.
+        """
+        # TODO: Use global theme instead
+        theme = {
+            "hist_outline_color": [0, 0, 0.9],
+            "hist_color": [0.5, 0, 0.9],
+        }
+
+        limit = 10  # max steps to show
+
+        # TODO: assert isinstance(list(values.values())[0], np.ndarray)
+        
+        # How many images to show
+        rows = 1
+        cols = 1
+
+        # Divide area into a grid
+        if subplot_spec is not None:
+            gs = matplotlib.gridspec.GridSpecFromSubplotSpec(rows, cols, subplot_spec=subplot_spec)
+        else:
+            gs = matplotlib.gridspec.GridSpec(rows, cols)
+        
+        ax = self.figure.add_subplot(gs[0, 0], projection="3d")
+        ax.view_init(30, -80)
+
+        # Compute histograms
+        verts = []
+        area_colors = []
+        edge_colors = []
+        for i, s in enumerate(metric.steps[-limit:]):
+            hist, edges = np.histogram(metric.data[-i-1:])
+            # X is bin centers
+            x = np.diff(edges)/2 + edges[:-1]
+            # Y is hist values
+            y = hist
+            x = np.concatenate([x[0:1], x, x[-1:]])
+            y = np.concatenate([[0], y, [0]])
+
+            # Ranges
+            if i == 0:
+                x_min = x.min()
+                x_max = x.max()
+                y_min = y.min()
+                y_max = y.max()
+            x_min = np.minimum(x_min, x.min())
+            x_max = np.maximum(x_max, x.max())
+            y_min = np.minimum(y_min, y.min())
+            y_max = np.maximum(y_max, y.max())
+
+            alpha = 0.8 * (i+1) / min(limit, len(metric.steps))
+            verts.append(list(zip(x, y)))
+            # TODO: move theme values to global theme
+            area_colors.append(np.array(theme["hist_color"] + [alpha]))
+            edge_colors.append(np.array(theme["hist_outline_color"] + [alpha]))
+
+        poly = PolyCollection(verts, facecolors=area_colors, edgecolors=edge_colors)
+        ax.add_collection3d(poly, zs=list(range(min(limit, len(metric.steps)))), zdir='y')
+
+        ax.set_xlim(x_min, x_max)
+        ax.set_ylim(0, limit)
+        ax.set_yticklabels(metric.steps[-limit:])
+        ax.set_zlim(y_min, y_max)
+        ax.set_title(metric.name)
+

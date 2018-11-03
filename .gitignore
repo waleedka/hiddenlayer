@@ -102,4 +102,13 @@ ENV/
 
 .idea/
 
-/datasets
+# Visual Studio Code
+.vscode/
+
+# Unit test cache
+.pytest_cache/
+
+# Test and demo data
+test_output/
+test_data/
+demo_output/
