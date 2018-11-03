@@ -9,7 +9,12 @@ import hiddenlayer as hl
 # Hide GPUs. Not needed for this test.
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
 
-OUTPUT_DIR = "test_output"
+# Create output directory in project root
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+OUTPUT_DIR = os.path.join(ROOT_DIR, "test_output")
+if not os.path.exists(OUTPUT_DIR):
+    os.makedirs(OUTPUT_DIR)
+DATA_DIR = os.path.join(ROOT_DIR, "test_data")
 
 class TestTensorFlow(unittest.TestCase):
     def test_graph(self):

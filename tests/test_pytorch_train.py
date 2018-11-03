@@ -13,8 +13,12 @@ matplotlib.use("Agg")
 
 import hiddenlayer as hl
 
-OUTPUT_DIR = "test_output"
-DATA_DIR = "test_data"
+# Create output and data directories in project root
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+OUTPUT_DIR = os.path.join(ROOT_DIR, "test_output")
+if not os.path.exists(OUTPUT_DIR):
+    os.makedirs(OUTPUT_DIR)
+DATA_DIR = os.path.join(ROOT_DIR, "test_data")
 
 
 class Net(nn.Module):

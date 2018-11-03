@@ -24,15 +24,12 @@ NUM_CLASSES = 10
 NUM_TRAIN_SAMPLES = 50000
 NUM_TEST_SAMPLES = 10000
 CIFAR10_URL = 'https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz'
-DATA_FOLDER = './test_data'
-CIFAR10_FOLDER = os.path.join(DATA_FOLDER, 'cifar-10-batches-py')
-CIFAR10_TARBALL = os.path.join(DATA_FOLDER, CIFAR10_URL.split('/')[-1])
 
 
 class CIFAR10():
     """TF data handler for CIFAR-10 dataset and model."""
 
-    def __init__(self, batch_size=8):
+    def __init__(self, batch_size=8, data_dir=None):
         """CIFAR-10 dataset and TF model constructor.
         Args:
             batch_size: dataset batch size.
@@ -45,6 +42,9 @@ class CIFAR10():
         self.num_classes = NUM_CLASSES
         self.train_len = NUM_TRAIN_SAMPLES
         self.test_len = NUM_TEST_SAMPLES
+        self.data_dir = data_dir or "./test_data"
+        self.cifar10_dir = os.path.join(self.data_dir, 'cifar-10-batches-py')
+        self.cifar10_tarball = os.path.join(self.data_dir, CIFAR10_URL.split('/')[-1])
         self.maybe_download_and_extract()
 
     @property
@@ -82,9 +82,9 @@ class CIFAR10():
         """
         data, labels = None, None
         if dataset is 'train':
-            files = [os.path.join(CIFAR10_FOLDER, 'data_batch_%d' % i) for i in range(1, 6)]
+            files = [os.path.join(self.cifar10_dir, 'data_batch_%d' % i) for i in range(1, 6)]
         else:
-            files = [os.path.join(CIFAR10_FOLDER, 'test_batch')]
+            files = [os.path.join(self.cifar10_dir, 'test_batch')]
 
         for file in files:
             if not os.path.exists(file):
@@ -214,20 +214,20 @@ class CIFAR10():
 
     def maybe_download_and_extract(self):
         """Download and extract the tarball from Alex Krizhevsky's website."""
-        if not os.path.exists(CIFAR10_FOLDER):
+        if not os.path.exists(self.cifar10_dir):
 
-            if not os.path.exists(DATA_FOLDER):
-                os.makedirs(DATA_FOLDER)
+            if not os.path.exists(self.data_dir):
+                os.makedirs(self.data_dir)
 
             def _progress(count, block_size, total_size):
                 status_msg = '\r>> Downloading {} {:>3}%   '
-                sys.stdout.write(status_msg.format(CIFAR10_TARBALL, float(count * block_size) / total_size * 100.0))
+                sys.stdout.write(status_msg.format(self.cifar10_tarball, float(count * block_size) / total_size * 100.0))
                 sys.stdout.flush()
 
-            file_path, _ = urlretrieve(CIFAR10_URL, CIFAR10_TARBALL, _progress)
+            file_path, _ = urlretrieve(CIFAR10_URL, self.cifar10_tarball, _progress)
 
             stat_info = os.stat(file_path)
             print('\nSuccessfully downloaded', file_path, stat_info.st_size, 'bytes.\n')
 
-            tarfile.open(file_path, 'r:gz').extractall(DATA_FOLDER)
+            tarfile.open(file_path, 'r:gz').extractall(self.data_dir)
 
