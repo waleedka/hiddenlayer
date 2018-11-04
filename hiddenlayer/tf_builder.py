@@ -6,28 +6,32 @@ Written by Phil Ferriere
 Licensed under the MIT License
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
+import logging
 import tensorflow as tf
 from .graph import Graph, Node
 from . import transforms as ht
 
 
 FRAMEWORK_TRANSFORMS = [
-    ht.Prune("ConcatIgnore"),  # TODO: no need to create *Ignore nodes then deleting them
-    ht.Prune("DropoutIgnore"),
-    ht.Prune("FlattenIgnore"),
-    ht.Prune("MeanIgnore"),
-    ht.Prune("PadIgnore"),
-    ht.Prune("Biases"),
-    ht.Prune("Weights"),
+    # Rename VariableV2 op to Variable. Same for anything V2, V3, ...etc.
+    ht.Rename(op=r"(\w+)V\d", to=r"\1"),
+
+    # ht.Prune("ConcatIgnore"),  # TODO: no need to create *Ignore nodes then deleting them
     ht.Prune("Const"),
     ht.Prune("Variable"),
-    ht.Prune("Assign"),
-    ht.Prune("AssignSub"),
-    ht.Rename(op=r"Conv2D", to=r"Conv"),
-    ht.Rename(op=r"FusedBatchNorm", to=r"BatchNormalization"),
-    ht.Rename(op=r"(\w+)V\d", to=r"\1"),
+    ht.PruneBranch("Assign"),
+    ht.PruneBranch("AssignSub"),
+    ht.Prune("ApplyMomentum"),
+    ht.FoldId(r"^(gradients)/.*", "NoOp"),  # Fold to NoOp then delete in the next step
+    ht.Prune("NoOp"),
+    ht.Rename(op=r"Conv2D", to="Conv"),
+    ht.Rename(op=r"FusedBatchNorm", to="BatchNormalization"),
+    ht.Rename(op=r"MatMul", to="Linear"),
     ht.Fold("Conv > BiasAdd", "__first__"),
     ht.Fold("Linear > BiasAdd", "__first__"),
+    ht.FoldId(r"(.+)/dropout/.*", "Dropout"),
+    ht.FoldId(r"(.+)/flatten/.*", "Flatten"),
+    ht.FoldId(r"(softmax_cross\_entropy)\_with\_logits.*", "SoftmaxCrossEntropy"),
 ]
 
 
@@ -64,61 +68,12 @@ def import_graph(hl_graph, tf_graph, output=None, verbose=False):
     # Loop through nodes and build the matching directed graph
     # TODO: Repace the transformations below with Transform objects
     for tf_node in graph_def.node:
-        # Operation type and name
-        if "weights" in tf_node.name.lower():
-            op = "Weights"
-        elif "biases" in tf_node.name.lower():
-            op = "Biases"
-        elif "dropout" in tf_node.name.lower():
-            if "dropout/div" in tf_node.name.lower() or "dropout/mul" in tf_node.name.lower():
-                op = "Dropout"
-            else:
-                op = "DropoutIgnore"
-        elif "flatten" in tf_node.name.lower():
-            if "strided_slice" in tf_node.name.lower() or "/shape" in tf_node.name.lower():
-                op = "FlattenIgnore"
-            else:
-                op = "Flatten"
-        elif "paddings" in tf_node.name.lower():
-            op = "PadIgnore"
-        elif "reduction_indices" in tf_node.name.lower():
-            op = "MeanIgnore"
-        elif "concat/axis" in tf_node.name.lower():
-            op = "ConcatIgnore"
-        elif "dense" in tf_node.name.lower() and "matmul" in tf_node.name.lower():
-            op = "Linear"
-        else:
-            op = tf_node.op
-        name = None
-        uid = tf_node.name  # TODO
-
-        # Inputs
-        inputs = tf_node.input
-
-        # Shape
-        shape = tf.graph_util.tensor_shape_from_node_def_name(tf_graph, tf_node.name).as_list()
-
-        # Parameters
-        # At this stage, we really only care about two parameters:
-        # 1/ the kernel size used by convolution layers, 2/ the stride used by pooling layers
-
-        # 1/ The kernel size is actually not stored in the convolution tensor but in its weight input.
-        # The weights input has the shape [shape=[kernel, kernel, in_channels, filters]]
-        # So we must fish for it
-        params = {} # None
-        if op == "Conv2D":
-            kernel_shape = tf.graph_util.tensor_shape_from_node_def_name(tf_graph, tf_node.input[1])
-            kernel_shape = [int(a) for a in kernel_shape]
-            params["kernel_shape"] = kernel_shape[0:2]
-        elif op == "MaxPool" or op == "AvgPool":
-            # 2/ the stride used by pooling layers
-            # See https://stackoverflow.com/questions/44124942/how-to-access-values-in-protos-in-tensorflow
-            if 'ksize' in tf_node.attr.keys():
-                kernel_shape = [int(a) for a in tf_node.attr['ksize'].list.i]
-                params["kernel_shape"] = kernel_shape[1:3]
-            # if 'strides' in node.attr.keys():
-            #     strides = [int(a) for a in node.attr['strides'].list.i]
-            #     params["stride"] = strides[1:3]
+        # Read node details
+        try:
+            op,  uid, name, shape, params = import_node(tf_node, tf_graph)
+        except:
+            logging.exception("Failed to read node {}".format(tf_node))
+            continue
 
         # Add layer
         layer = Node(uid=uid, name=name, op=op, output_shape=shape, params=params)
@@ -130,3 +85,46 @@ def import_graph(hl_graph, tf_graph, output=None, verbose=False):
             if uid in target_node.input:
                 hl_graph.add_edge_by_id(uid, target_node.name, shape)
     return hl_graph
+
+
+def import_node(tf_node, tf_graph):
+    # Operation type and name
+    op = tf_node.op
+    uid = tf_node.name
+    name = None
+
+    # Shape
+    shape = None
+    if tf_node.op != "NoOp":
+        try:
+            shape = tf.graph_util.tensor_shape_from_node_def_name(tf_graph, tf_node.name)
+            # Is the shape is known, convert to a list
+            if shape.ndims is not None:
+                shape = shape.as_list()
+        except:
+            logging.exception("Error reading shape of {}".format(tf_node))
+
+    # Parameters
+    # At this stage, we really only care about two parameters:
+    # 1/ the kernel size used by convolution layers
+    # 2/ the stride used by convolutional and pooling layers  (TODO: not fully working yet)
+
+    # 1/ The kernel size is actually not stored in the convolution tensor but in its weight input.
+    # The weights input has the shape [shape=[kernel, kernel, in_channels, filters]]
+    # So we must fish for it
+    params = {}
+    if op == "Conv2D":
+        kernel_shape = tf.graph_util.tensor_shape_from_node_def_name(tf_graph, tf_node.input[1])
+        kernel_shape = [int(a) for a in kernel_shape]
+        params["kernel_shape"] = kernel_shape[0:2]
+    elif op == "MaxPool" or op == "AvgPool":
+        # 2/ the stride used by pooling layers
+        # See https://stackoverflow.com/questions/44124942/how-to-access-values-in-protos-in-tensorflow
+        if 'ksize' in tf_node.attr.keys():
+            kernel_shape = [int(a) for a in tf_node.attr['ksize'].list.i]
+            params["kernel_shape"] = kernel_shape[1:3]
+        # if 'strides' in node.attr.keys():
+        #     strides = [int(a) for a in node.attr['strides'].list.i]
+        #     params["stride"] = strides[1:3]
+
+    return op, uid, name, shape, params

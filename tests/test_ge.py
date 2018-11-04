@@ -218,13 +218,13 @@ class TestTransforms(unittest.TestCase):
         g.add_edge(b, d)
 
         t = ht.Rename(op=r"a", to="bbb")
-        t.apply(g)
+        g = t.apply(g)
         self.assertEqual(g["a"].op, "bbb")
 
         t = ht.Rename(op=r"b(.*)", to=r"x\1")
-        t.apply(g)
-        self.assertEqual(a.op, "xbb")
-        self.assertEqual(b.op, "x")
+        g = t.apply(g)
+        self.assertEqual(g["a"].op, "xbb")
+        self.assertEqual(g["b"].op, "x")
 
     def test_fold(self):
         g = hl.Graph()
@@ -241,7 +241,7 @@ class TestTransforms(unittest.TestCase):
         g.add_edge(b, d)
 
         t = ht.Fold("a > b", "ab")
-        t.apply(g)
+        g = t.apply(g)
         self.assertEqual(g.incoming(g["c"])[0].op, "ab")
 
     def test_parallel_fold(self):
@@ -263,7 +263,7 @@ class TestTransforms(unittest.TestCase):
         g.add_edge(d, e)
 
         t = ht.Fold("((b > c) | d) > e", "bcde")
-        t.apply(g)
+        g = t.apply(g)
         self.assertEqual(g.outgoing(g["a"])[0].op, "bcde")
 
     def test_prune(self):
@@ -285,8 +285,32 @@ class TestTransforms(unittest.TestCase):
         g.add_edge(d, e)
 
         t = ht.Prune("e")
-        t.apply(g)
+        g = t.apply(g)
         self.assertFalse(g.outgoing(d))
+
+    def test_prune_branch(self):
+        g = hl.Graph()
+        a = hl.Node(uid="a", name="a", op="a")
+        b = hl.Node(uid="b", name="b", op="b")
+        c = hl.Node(uid="c", name="c", op="c")
+        d = hl.Node(uid="d", name="d", op="d")
+        e = hl.Node(uid="e", name="e", op="e")
+        g.add_node(a)
+        g.add_node(b)
+        g.add_node(c)
+        g.add_node(d)
+        g.add_node(e)
+        g.add_edge(a, b)
+        g.add_edge(b, c)
+        g.add_edge(a, d)
+        g.add_edge(c, e)
+        g.add_edge(d, e)
+
+        t = ht.PruneBranch("c")
+        g = t.apply(g)
+        self.assertFalse(g["b"])
+        self.assertFalse(g["c"])
+        self.assertTrue(g["a"])
 
 
 if __name__ == "__main__":

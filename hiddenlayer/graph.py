@@ -138,6 +138,36 @@ class Node():
 # Graph
 ###########################################################################
 
+def build_graph(model=None, args=None, input_names=None,
+                transforms="default", framework_transforms="default"):
+    # Initialize an empty graph
+    g = Graph()
+
+    # Detect framwork
+    framework = detect_framework(model)
+    if framework == "torch":
+        from .pytorch_builder import import_graph, FRAMEWORK_TRANSFORMS
+        assert args is not None, "Argument args must be provided for Pytorch models."
+        import_graph(g, model, args)
+    elif framework == "tensorflow":
+        from .tf_builder import import_graph, FRAMEWORK_TRANSFORMS
+        import_graph(g, model)
+    
+    # Apply Transforms
+    if framework_transforms:
+        if framework_transforms == "default":
+            framework_transforms = FRAMEWORK_TRANSFORMS
+        for t in framework_transforms:
+            g = t.apply(g)
+    if transforms:
+        if transforms == "default":
+            from .transforms import SIMPLICITY_TRANSFORMS  # TODO: doesn't belong here
+            transforms = SIMPLICITY_TRANSFORMS
+        for t in transforms:
+            g = t.apply(g)
+    return g
+
+
 class Graph():
     """Tracks nodes and edges of a directed graph and supports basic operations on them."""
 
@@ -329,8 +359,8 @@ class Graph():
             #                style="dashed")
             #         s.node(str(k), label)
         for a, b, label in self.edges:
-            if isinstance(label, list):
-                label = "x".join(map(str, label))
+            if isinstance(label, (list, tuple)):
+                label = "x".join([str(l or "?") for l in label])
 
             dot.edge(str(a), str(b), label)
         return dot
