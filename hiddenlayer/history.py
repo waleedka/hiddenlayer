@@ -11,6 +11,7 @@ import random
 import io
 import itertools
 import time
+import datetime
 import pickle
 import numpy as np
 import matplotlib.pyplot as plt
@@ -27,7 +28,6 @@ class Metric():
     """Represents the history of a single metric."""
     def __init__(self, history, name):
         self.name = name
-        # TODO: history.history is not cool
         self.steps = history.steps
         self.data = np.array([history.history[s].get(name)
                               for s in self.steps])
@@ -62,6 +62,8 @@ class History():
         if step not in self.history:
             self.history[step] = {}
         self.history[step].update({k:utils.to_data(v) for k, v in kwargs.items()})
+        # Update step timestamp
+        self.history[step]["__timestamp__"] = time.time()
 
     @property
     def steps(self):
@@ -87,11 +89,30 @@ class History():
         text = "Step {}: ".format(self.step)
         metrics = self.history[self.step]
         for k, v in metrics.items():
+            # Skip timestamp
+            if k == "__timestamp__":
+                continue
             # Exclude lists, dicts, and arrays
             # TODO: ideally, include the skipped types with a compact representation
             if not isinstance(v, (list, dict, np.ndarray)):
                 text += "{}: {}  ".format(k, v)
         print(text)
+
+    def summary(self):
+        # TODO: Include more details in the summary
+        print("Last Step: {}".format(self.step))
+        print("Training Time: {}".format(self.get_total_time()))
+
+    def get_total_time(self):
+        """Returns the total period between when the first and last steps
+        where logged. This usually correspnods to the total training time
+        if there were no gaps in the training.
+        """
+        first_step = self.steps[0]
+        last_step = self.steps[-1]
+        seconds = self.history[last_step]["__timestamp__"] \
+                  - self.history[first_step]["__timestamp__"]
+        return datetime.timedelta(seconds=seconds)
 
     def save(self, file_name):
         with open(file_name, "wb") as f:
