@@ -1,11 +1,12 @@
-from setuptools import setup
+import setuptools
 
-setup(
-    name = 'HiddenLayer',
-    packages = ['hiddenlayer'],
+setuptools.setup(
+    name = 'hiddenlayer',
+    # packages = ['hiddenlayer'],
+    packages = setuptools.find_packages(),
     version = '0.1',
     license="MIT",
-    description = 'A light-weight alternative to TensorBoard for smaller deep learning projects',
+    description = 'Neural network graphs and training metrics for PyTorch and TensorFlow',
     author = 'Waleed Abdulla <waleed.abdulla@gmail.com>, Phil Ferriere <pferriere@hotmail.com>',
     url = 'https://github.com/waleedka/hiddenlayer',
     classifiers = [
@@ -26,5 +27,7 @@ setup(
     # Specify the Python versions you support here. In particular, ensure
     # that you indicate whether you support Python 2, Python 3 or both.
     'Programming Language :: Python :: 3.5',
+
+    'Operating System :: OS Independent',
     ],
 )
