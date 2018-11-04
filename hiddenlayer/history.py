@@ -19,6 +19,17 @@ import matplotlib
 from . import utils
 
 
+###############################################################################
+# Helper Functions
+###############################################################################
+
+def format_step(step, zero_prefix=False):
+    """Return the step value in format suitable for display."""
+    if isinstance(step, int):
+        return "{:06}".format(step) if zero_prefix else "{}".format(step)
+    elif isinstance(step, tuple):
+        return "{:04}:{:06}".format(*step) if zero_prefix else "{}:{}".format(*step)
+
 
 ###############################################################################
 # Metric Class
@@ -32,6 +43,10 @@ class Metric():
         self.data = np.array([history.history[s].get(name)
                               for s in self.steps])
 
+    @property
+    def formatted_steps(self):
+        return [format_step(s) for s in self.steps]
+
 
 ###############################################################################
 # History Class
@@ -44,17 +59,23 @@ class History():
     """
     
     def __init__(self):
-        self.history = {}
-        self.step = None
-        self.epoch = None
-        self.metrics = set()
+        self.step = None  # Last reported step
+        self.metrics = set()  # Names of all metrics reported so far
+        self.history = {}  # Dict of steps and metrics {step: [metrics...]}
 
     def log(self, step, **kwargs):
+        """Record metrics at a specific step. E.g.
+
+        my_history.log(34, loss=2.3, accuracy=0.2)
+
+        Okay to call multiple times for the same step. New values overwrite
+        older ones if they have the same metric name.
+
+        step: An integer or tuple of integers. If a tuple, then the first
+            value is considered to be the epoch and the second is the step
+            within the epoch.
         """
-        Okay to call multiple times for the same step.
-        """
-        # Update step
-        step = str(step)  # TODO
+        assert isinstance(step, (int, tuple)), "Step must be an int or a tuple of two ints"
         self.step = step
         # Any new metrics we haven't seen before?
         self.metrics |= set(kwargs.keys())
@@ -67,19 +88,16 @@ class History():
 
     @property
     def steps(self):
-        # TODO: cache the sorted steps for performance
+        """Returns a list of all steps logged so far. Guranteed to be
+        sorted correctly."""
         if not self.history:
             return []
-        parts = next(iter(self.history.keys())).split(":")
-        if len(parts) == 1:
-            return list(map(str, sorted(map(int, self.history.keys()))))
-        elif len(parts) == 2:
-            steps = []
-            for k in self.history.keys():
-                s = k.split(":")
-                steps.append( (int(s[0]), int(s[1])) )
-            steps = sorted(steps)
-            return ["{}:{}".format(e, b) for e, b in steps]
+        # TODO: Consider caching the sorted steps for performance
+        return sorted(self.history.keys())
+
+    @property
+    def formatted_steps(self):
+        return [format_step(s) for s in self.steps]
 
     def __getitem__(self, metric):
         return Metric(self, metric)
@@ -121,3 +139,7 @@ class History():
     def load(self, file_name):
         with open(file_name, "rb") as f:
             self.history = pickle.load(f)
+        # Set last step and metrics
+        self.step = self.steps[-1]
+        unique_metrics = set(itertools.chain(*[m.keys() for m in self.history.values()]))
+        self.metrics = unique_metrics - {"__timestamp__",}
