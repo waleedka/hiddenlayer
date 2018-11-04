@@ -28,6 +28,8 @@ class Fold():
             # Replace pattern with new node
             if self.op == "__first__":
                 combo = matches[0]
+            elif self.op == "__last__":
+                combo = matches[-1]
             else:
                 combo = Node(uid=graph.sequence_id(matches),
                                 name=self.name or " &gt; ".join([l.title for l in matches]),
