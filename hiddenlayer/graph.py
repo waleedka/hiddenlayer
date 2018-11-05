@@ -71,7 +71,7 @@ class Node():
         op: Framework-agnostic operation name.
         """
         self.id = uid
-        self.name = name  # TODO: clarify op vs name vs title
+        self.name = name  # TODO: clarify the use of op vs name vs title
         self.op = op
         self.repeat = 1
         if output_shape:
@@ -123,16 +123,6 @@ class Node():
         f += ">"
         return f.format(*args)
 
-    # TODO
-    # def __eq__(self, a):
-    #     assert isinstance(a, Layer)
-    #     if self.params and a.params:
-    #         return hash(self.params) == hash(a.params)
-    #     elif not self.params and not a.params:
-    #         return True
-    #     else:
-    #         return False
-
 
 ###########################################################################
 # Graph
@@ -161,7 +151,7 @@ def build_graph(model=None, args=None, input_names=None,
             g = t.apply(g)
     if transforms:
         if transforms == "default":
-            from .transforms import SIMPLICITY_TRANSFORMS  # TODO: doesn't belong here
+            from .transforms import SIMPLICITY_TRANSFORMS
             transforms = SIMPLICITY_TRANSFORMS
         for t in transforms:
             g = t.apply(g)
@@ -198,7 +188,7 @@ class Graph():
                     t.apply(self)
             if transforms:
                 if transforms == "default":
-                    from .transforms import SIMPLICITY_TRANSFORMS  # TODO: doesn't belong here
+                    from .transforms import SIMPLICITY_TRANSFORMS
                     transforms = SIMPLICITY_TRANSFORMS
                 for t in transforms:
                     t.apply(self)
@@ -281,7 +271,7 @@ class Graph():
         if not collapse:
             self.add_node(node)
         for in_node in self.incoming(nodes):
-            # TODO: it's not clean to have to check if node has output_shape
+            # TODO: check specifically for output_shape is not generic. Consider refactoring.
             self.add_edge(in_node, node, in_node.output_shape if hasattr(in_node, "output_shape") else None)
         for out_node in self.outgoing(nodes):
             self.add_edge(node, out_node, node.output_shape if hasattr(node, "output_shape") else None)
@@ -309,7 +299,7 @@ class Graph():
         which original nodes make up the sequence. This is actually quite useful.
         """
         if self.meaningful_ids:
-            # TODO: does this work for PyTorch?
+            # TODO: This might fail if the ID becomes too long
             return "><".join([node.id for node in sequence])
         else:
             return getrandbits(64)
@@ -349,15 +339,7 @@ class Graph():
             if n.repeat > 1:
                 label += "<tr><td align='right' cellpadding='2'>x{}</td></tr>".format(n.repeat)
             label = "<<table border='0' cellborder='0' cellpadding='0'>" + label + "</table>>"
-
-            if True or n.repeat == 1:  # TODO:
-                dot.node(str(k), label)
-            # else:
-            #     with dot.subgraph(name="cluster {}".format(n.id)) as s:
-            #         s.attr(label="x{}".format(n.repeat),
-            #                labelloc="br", labeljust="r",
-            #                style="dashed")
-            #         s.node(str(k), label)
+            dot.node(str(k), label)
         for a, b, label in self.edges:
             if isinstance(label, (list, tuple)):
                 label = "x".join([str(l or "?") for l in label])
@@ -365,19 +347,12 @@ class Graph():
             dot.edge(str(a), str(b), label)
         return dot
 
-    # TODO: needed?
-    def list_layers(self):
-        """List the layers in the graph (for debugging purposes).
-        """
-        for layer in self.nodes.values():
-            print(layer)
-
     def _repr_svg_(self):
         """Allows Jupyter notebook to render the graph automatically."""
         return self.build_dot()._repr_svg_()
     
     def save(self, path, format="pdf"):
-        # TODO: assert on format
+        # TODO: assert on acceptable format values
         dot = self.build_dot()
         dot.format = format
         directory, file_name = os.path.split(path)

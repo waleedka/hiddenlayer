@@ -197,12 +197,6 @@ class TestPatterns(unittest.TestCase):
 
 
 class TestTransforms(unittest.TestCase):
-    def build_graph(self):
-        # TODO: can't do it because I need to return
-        #       variables, a, b, c, ...etc.
-        #       Find better solution
-        pass
-
     def test_regex(self):
         g = hl.Graph()
         a = hl.Node(uid="a", name="a", op="a")

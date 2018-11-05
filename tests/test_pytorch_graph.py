@@ -15,17 +15,17 @@ if not os.path.exists(OUTPUT_DIR):
 
 
 class TestPytorchGraph(unittest.TestCase):
-    # def test_graph(self):
-    #     model = torchvision.models.vgg16()
-    #     g = hl.build_graph(model, torch.zeros([1, 3, 224, 224]))
-    #     g.save(os.path.join(OUTPUT_DIR, "pytorch_vgg16.pdf"))
+    def test_graph(self):
+        model = torchvision.models.vgg16()
+        g = hl.build_graph(model, torch.zeros([1, 3, 224, 224]))
+        g.save(os.path.join(OUTPUT_DIR, "pytorch_vgg16.pdf"))
 
-    #     model = torchvision.models.resnet50()
-    #     g = hl.build_graph(model, torch.zeros([1, 3, 224, 224]))
-    #     g.save(os.path.join(OUTPUT_DIR, "pytorch_resnet50.pdf"))
+        model = torchvision.models.resnet50()
+        g = hl.build_graph(model, torch.zeros([1, 3, 224, 224]))
+        g.save(os.path.join(OUTPUT_DIR, "pytorch_resnet50.pdf"))
 
-    #     # Clean up
-    #     # TODO: shutil.rmtree(OUTPUT_DIR)
+        # Clean up
+        shutil.rmtree(OUTPUT_DIR)
 
 
     def test_resnet_blocks(self):
@@ -53,7 +53,7 @@ class TestPytorchGraph(unittest.TestCase):
         g.save(os.path.join(OUTPUT_DIR, "pytorch_resnet_bloks.pdf"))
 
         # Clean up
-        # TODO: shutil.rmtree(OUTPUT_DIR)
+        shutil.rmtree(OUTPUT_DIR)
 
 
 if __name__ == "__main__":

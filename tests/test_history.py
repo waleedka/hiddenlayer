@@ -42,7 +42,7 @@ class TestHistory(unittest.TestCase):
         self.assertEqual(hl.history.format_step(h2.step, zero_prefix=True), "000099")
 
         # Clean up
-        # TODO: shutil.rmtree(OUTPUT_DIR)
+        shutil.rmtree(OUTPUT_DIR)
 
     def test_epochs(self):
         # Create History object
@@ -74,7 +74,7 @@ class TestHistory(unittest.TestCase):
         self.assertEqual(hl.history.format_step(h2.step, zero_prefix=True), "0009:000099")
 
         # Clean up
-        # TODO: shutil.rmtree(OUTPUT_DIR)
+        shutil.rmtree(OUTPUT_DIR)
 
 
 

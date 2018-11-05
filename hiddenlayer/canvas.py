@@ -195,59 +195,6 @@ class Canvas():
             ax.set_title(metric.formatted_steps[-cols:][i])
             ax.imshow(norm(image))
 
-    # TODO: is this used any more?
-    def draw_activations(self, keys=None, title=""):
-        """Display a series of activations at different time steps.
-        """
-        # The feature dimension in conv layers. Typically dimension 1 in
-        # Pytorch and 3 in TensorFlow.
-        # TODO: change dynamically based on framework
-        feature_dim = 1  
-
-        # Steps: extract from history
-        steps = sorted(self.history.keys())
-        
-        # Keys: use provided value or scan the log and extract unique keys
-        keys = keys or set(itertools.chain(*[list(s.keys()) for s in self.history.values()]))
-        
-        # Values: Parse log into a dict of key: [list of values with None for missing values]
-        values = {}
-        for k in keys:
-            values[k] = [self.history[s].get(k) for s in steps]
-        
-        # Keep conv outputs and filter out the rest
-        # TODO: Handle other types of layes?
-        def is_conv_output(v):
-            return isinstance(v, np.ndarray) and v.ndim == 4
-        keys = list(filter(lambda k: is_conv_output(values[k][0]), keys))
-        if not keys:
-            raise ValueError("keys must include the key of an output of a conv layer")
-        
-        # Figure: use given figure or the current figure of pyplot
-        fig = fig or plt.gcf()
-
-        # TODO: input param should be just one key, not keys
-        key = keys[0]
-        values = values[key]
-
-        # How many to show
-        rows = min(4, values[0].shape[feature_dim])
-        cols = 10
-
-        # Divide area into a grid
-        if subplot_spec is not None:
-            gs = matplotlib.gridspec.GridSpecFromSubplotSpec(rows, cols, subplot_spec=subplot_spec)
-        else:
-            gs = matplotlib.gridspec.GridSpec(rows, cols)
-        
-        for s, weight in enumerate(values[-cols:]):
-            for r in range(rows):
-                ax = fig.add_subplot(gs[r, s])
-                ax.axis('off')
-                image = weight[r]
-                ax.set_title("step {}  shape: {}".format(s, weight.shape))
-                ax.imshow(norm(image), cmap="Greys_r")
-
     def draw_hist(self, metric, title=""):
         """Draw a series of histograms of the selected keys over different
         training steps.
@@ -289,7 +236,6 @@ class Canvas():
 
             alpha = 0.8 * (i+1) / min(limit, len(metric.steps))
             verts.append(list(zip(x, y)))
-            # TODO: move theme values to global theme
             area_colors.append(np.array(self.theme["hist_color"] + [alpha]))
             edge_colors.append(np.array(self.theme["hist_outline_color"] + [alpha]))
 

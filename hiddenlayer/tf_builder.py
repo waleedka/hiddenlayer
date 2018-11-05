@@ -15,8 +15,6 @@ from . import transforms as ht
 FRAMEWORK_TRANSFORMS = [
     # Rename VariableV2 op to Variable. Same for anything V2, V3, ...etc.
     ht.Rename(op=r"(\w+)V\d", to=r"\1"),
-
-    # ht.Prune("ConcatIgnore"),  # TODO: no need to create *Ignore nodes then deleting them
     ht.Prune("Const"),
     ht.Prune("Variable"),
     ht.PruneBranch("Assign"),
@@ -66,7 +64,6 @@ def import_graph(hl_graph, tf_graph, output=None, verbose=False):
         dump_tf_graph(tf_graph, graph_def)
 
     # Loop through nodes and build the matching directed graph
-    # TODO: Repace the transformations below with Transform objects
     for tf_node in graph_def.node:
         # Read node details
         try:

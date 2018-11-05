@@ -56,7 +56,7 @@ class GEParser():
             return NodePattern(t, c)
     
     def condition(self):
-        # TODO: not implemented yet
+        # TODO: not implemented yet. This function is a placeholder
         index = self.index
         if self.token("["):
             c = self.token("1x1") or self.token("3x3")
@@ -125,7 +125,7 @@ class ParallelPattern():
         if len(nodes) == 1:
             nodes = graph.siblings(nodes[0])
         else:
-            # Verify all nodes have the same parent (TODO: or all have no parent)
+            # Verify all nodes have the same parent or all have no parent
             parents = [graph.incoming(n) for n in nodes]
             matches = [set(p) == set(parents[0]) for p in parents[1:]]
             if not all(matches):

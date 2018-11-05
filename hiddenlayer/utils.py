@@ -5,10 +5,10 @@ import numpy as np
 # Misc functions
 ###############################################################################
 
-# TODO: Use get_framework() for better detection.
 def to_data(value):
     """Standardize data types. Converts PyTorch tensors to Numpy arrays,
     and Numpy scalars to Python scalars."""
+    # TODO: Use get_framework() for better detection.
     if value.__class__.__module__.startswith("torch"):
         import torch
         if isinstance(value, torch.nn.parameter.Parameter):

@@ -130,7 +130,7 @@ class TestSlimModels(unittest.TestCase):
                 dot.render("tf_overfeat", directory=OUTPUT_DIR, cleanup=True)
 
         # Clean up
-        # TODO: shutil.rmtree(OUTPUT_DIR)
+        shutil.rmtree(OUTPUT_DIR)
 
 
 if __name__ == "__main__":

@@ -7,8 +7,6 @@ HiddenLayer is a simple and hackable library for quick deep learning experimenta
 It works great with Jupyter Notebook, and it's easy to customize and extend. 
 It's not intended to be a replacement for more advanced tools, such as TensorBoard. But rather for situations where the advanced tools are too big for the task. For example, if you're running experiments in Jupyter Notebook or writing a deep learning tutorial, then HiddenLayer would be useful to visualize the graphs and metrics directly in the notebook. HiddenLayer was written by Waleed Abdulla and Phil Ferriere, and is licensed under the MIT License.
 
-# Key Features
-
 ## 1. Readable Graphs
 
 Use HiddenLayer to render a graph of your neural network in Jupyter Notebook, or to a pdf or png file.

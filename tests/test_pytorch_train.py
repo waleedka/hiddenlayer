@@ -51,19 +51,15 @@ def train(model, device, train_loader, optimizer, epoch):
         loss.backward()
         optimizer.step()
         if batch_idx % 10 == 0:
-            model.history.log(batch_idx, epoch=epoch,
+            model.history.log((epoch, batch_idx),
                 loss=loss,
                 conv1_weight=model.conv1.weight)
-
-            model.history.log(batch_idx, epoch=epoch,
-                loss2=loss)
 
             # At the end of each batch
             with model.canvas:
                 model.canvas.draw_plot(model.history["loss"])
-                model.canvas.draw_plot(model.history["loss2"])
                 model.canvas.draw_hist(model.history["conv1_weight"])
-                # TODO: c.draw_images(model.history["conv1_weight"])  # TODO
+                # TODO: c.draw_image(model.history["conv1_weight"])
 
             if batch_idx % 100 == 0:
                 model.canvas.save(os.path.join(OUTPUT_DIR, "pytorch_train_{}.png").format(epoch))
@@ -118,7 +114,7 @@ class TestPytorchWatcher(unittest.TestCase):
             test(model, device, test_loader)
 
         # Clean up
-        # TODO: shutil.rmtree(OUTPUT_DIR)
+        shutil.rmtree(OUTPUT_DIR)
 
 
 if __name__ == "__main__":

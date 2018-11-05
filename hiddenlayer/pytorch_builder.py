@@ -70,7 +70,7 @@ def import_graph(hl_graph, model, args, input_names=None, verbose=False):
             target_inputs = [i.unique() for i in target_torch_node.inputs()]
             if set(outputs) & set(target_inputs):
                 # Output shape
-                # TODO: find a better way
+                # TODO: find a better way to extract output shape
                 m = re.match(r".*Float\(([\d\s\,]+)\).*", str(next(torch_node.outputs())))
                 if m:
                     shape = m.group(1)
