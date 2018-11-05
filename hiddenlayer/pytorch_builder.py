@@ -1,10 +1,12 @@
 """
-PyTorch Graph importer
+HiddenLayer
 
+PyTorch graph importer.
+ 
 Written by Waleed Abdulla
-
 Licensed under the MIT License
 """
+
 from __future__ import absolute_import, division, print_function
 import re
 from .graph import Graph, Node

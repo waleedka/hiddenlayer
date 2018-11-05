@@ -1,4 +1,11 @@
-# Graph Expressions
+"""
+HiddenLayer
+
+Implementation graph expressions to find nodes in a graph based on a pattern.
+ 
+Written by Waleed Abdulla
+Licensed under the MIT License
+"""
 
 import re
 

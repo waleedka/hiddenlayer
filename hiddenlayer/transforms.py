@@ -1,3 +1,12 @@
+"""
+HiddenLayer
+
+Transforms that apply to and modify graph nodes.
+ 
+Written by Waleed Abdulla
+Licensed under the MIT License
+"""
+
 import re
 import copy
 from .graph import Node
@@ -11,7 +20,7 @@ from . import ge
 
 class Fold():
     def __init__(self, pattern, op, name=None):
-        # TODO: validation op and name are valid
+        # TODO: validate that op and name are valid
         self.pattern = ge.GEParser(pattern).parse()
         self.op = op
         self.name = name
@@ -42,7 +51,7 @@ class Fold():
 
 class FoldId():
     def __init__(self, id_regex, op, name=None):
-        # TODO: validation op and name are valid
+        # TODO: validate op and name are valid
         self.id_regex = re.compile(id_regex)
         self.op = op
         self.name = name

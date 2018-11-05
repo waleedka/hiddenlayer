@@ -1,3 +1,12 @@
+"""
+HiddenLayer
+
+Implementation of the Canvas class to render visualizations.
+
+Written by Waleed Abdulla
+Licensed under the MIT License
+"""
+
 import itertools
 import math
 import numpy as np

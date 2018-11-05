@@ -1,16 +1,11 @@
 """
-graph.py
+HiddenLayer
 
-Graph class.
-Tracks nodes and edges of a directed graph and supports basic operations on them.
+Implementation of the Graph class. A framework independent directed graph to
+represent a neural network.
 
-Written by Waleed Abdulla, additions by Phil Ferriere
-
+Written by Waleed Abdulla. Additions by Phil Ferriere.
 Licensed under the MIT License
-
-Refs:
-    graphviz Graph API
-    @ http://graphviz.readthedocs.io/en/stable/api.html#graph
 """
 from __future__ import absolute_import, division, print_function
 import os

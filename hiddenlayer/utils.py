@@ -1,3 +1,12 @@
+"""
+HiddenLayer
+
+Utility functions.
+ 
+Written by Waleed Abdulla
+Licensed under the MIT License
+"""
+
 import numpy as np
 
 

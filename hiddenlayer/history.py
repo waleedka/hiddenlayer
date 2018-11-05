@@ -1,8 +1,9 @@
 """
-History class.
+HiddenLayer
 
+Implementation of the History class to train training metrics.
+ 
 Written by Waleed Abdulla
-
 Licensed under the MIT License
 """
 
