@@ -89,7 +89,7 @@ class History():
 
     @property
     def steps(self):
-        """Returns a list of all steps logged so far. Guranteed to be
+        """Returns a list of all steps logged so far. Guaranteed to be
         sorted correctly."""
         if not self.history:
             return []
