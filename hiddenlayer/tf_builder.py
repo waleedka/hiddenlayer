@@ -18,14 +18,20 @@ FRAMEWORK_TRANSFORMS = [
     # Rename VariableV2 op to Variable. Same for anything V2, V3, ...etc.
     ht.Rename(op=r"(\w+)V\d", to=r"\1"),
     ht.Prune("Const"),
+    ht.Prune("PlaceholderWithDefault"),
     ht.Prune("Variable"),
+    ht.Prune("VarIsInitializedOp"),
+    ht.Prune("VarHandleOp"),
+    ht.Prune("ReadVariableOp"),
     ht.PruneBranch("Assign"),
     ht.PruneBranch("AssignSub"),
     ht.PruneBranch("AssignAdd"),
+    ht.PruneBranch("AssignVariableOp"),
     ht.Prune("ApplyMomentum"),
     ht.Prune("ApplyAdam"),
     ht.FoldId(r"^(gradients)/.*", "NoOp"),  # Fold to NoOp then delete in the next step
     ht.Prune("NoOp"),
+    ht.Rename(op=r"DepthwiseConv2dNative", to="SeparableConv"),
     ht.Rename(op=r"Conv2D", to="Conv"),
     ht.Rename(op=r"FusedBatchNorm", to="BatchNormalization"),
     ht.Rename(op=r"MatMul", to="Linear"),
@@ -71,9 +77,10 @@ def import_graph(hl_graph, tf_graph, output=None, verbose=False):
     for tf_node in graph_def.node:
         # Read node details
         try:
-            op,  uid, name, shape, params = import_node(tf_node, tf_graph)
+            op,  uid, name, shape, params = import_node(tf_node, tf_graph, verbose)
         except:
-            logging.exception("Failed to read node {}".format(tf_node))
+            if verbose:
+                logging.exception("Failed to read node {}".format(tf_node))
             continue
 
         # Add layer
@@ -88,7 +95,7 @@ def import_graph(hl_graph, tf_graph, output=None, verbose=False):
     return hl_graph
 
 
-def import_node(tf_node, tf_graph):
+def import_node(tf_node, tf_graph, verbose=False):
     # Operation type and name
     op = tf_node.op
     uid = tf_node.name
@@ -103,7 +110,8 @@ def import_node(tf_node, tf_graph):
             if shape.ndims is not None:
                 shape = shape.as_list()
         except:
-            logging.exception("Error reading shape of {}".format(tf_node))
+            if verbose:
+                logging.exception("Error reading shape of {}".format(tf_node.name))
 
     # Parameters
     # At this stage, we really only care about two parameters:
@@ -114,7 +122,7 @@ def import_node(tf_node, tf_graph):
     # The weights input has the shape [shape=[kernel, kernel, in_channels, filters]]
     # So we must fish for it
     params = {}
-    if op == "Conv2D":
+    if op == "Conv2D" or op == "DepthwiseConv2dNative":
         kernel_shape = tf.graph_util.tensor_shape_from_node_def_name(tf_graph, tf_node.input[1])
         kernel_shape = [int(a) for a in kernel_shape]
         params["kernel_shape"] = kernel_shape[0:2]

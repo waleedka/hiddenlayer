@@ -1,6 +1,6 @@
 # HiddenLayer
 
-A lightweight library for neural network graphs and training metrics for PyTorch and Tensorflow.
+A lightweight library for neural network graphs and training metrics for PyTorch, Tensorflow, and Keras.
 
 HiddenLayer is simple, easy to extend, and works great with Jupyter Notebook.
 It's not intended to replace advanced tools, such as TensorBoard, but rather for cases where advanced tools are too big for the task.
@@ -9,7 +9,7 @@ HiddenLayer was written by Waleed Abdulla and Phil Ferriere, and is licensed und
 ## 1. Readable Graphs
 
 Use HiddenLayer to render a graph of your neural network in Jupyter Notebook, or to a pdf or png file.
-See Jupyter notebook examples for [TensorFlow](demos/tf_graph.ipynb) and [PyTorch](demos/pytorch_graph.ipynb).
+See Jupyter notebook examples for [TensorFlow](demos/tf_graph.ipynb), [PyTorch](demos/pytorch_graph.ipynb), and [Keras](demos/keras_graph.ipynb).
 
 ![](assets/readme_graph.png) 
 
@@ -77,9 +77,13 @@ This notebook shows how to generate graphs for a few popular Pytorch models.
 - [`history_canvas.py`](demos/history_canvas.py): An example of using HiddenLayer without a GUI.
 
 **TensorFlow:**
+
 - [`tf_graph.ipynb`](demos/tf_graph.ipynb): This notebook illustrates how to generate graphs for various TF SLIM models.
 - [`tf_train.ipynb`](demos/tf_train.ipynb): Demonstrates tracking and visualizing training metrics  with TensorFlow.
 - [`history_canvas.py`](demos/history_canvas.py): An example of using HiddenLayer without a GUI.
+
+**Keras:**
+  - [`keras_graph.ipynb`](demos/keras_graph.ipynb): This notebook illustrates how to generate graphs for various Keras models.
 
 # Contributing
 
@@ -87,7 +91,7 @@ HiddenLayer is released under the MIT license.
 Feel free to extend it or customize it for your needs. If you discover bugs, which is likely since this is an early release, please do report them or submit a pull request.
 
 If you like to contribute new features, here are a few things we wanted to add but never got around to it:
-- Keras Support. This probably works already since Keras uses the TensorFlow backend. It was not tested, though.
+- Keras training notebook. This probably works already since Keras uses the TensorFlow backend. It was not tested, though.
 - Support for older versions of Python. Currently, it's only tested on Python 3.6.
 - Optimization to support logging big experiments.
 
@@ -96,25 +100,32 @@ If you like to contribute new features, here are a few things we wanted to add b
 
 ## 1. Prerequisites
 
-a. Python3, Numpy, Matplotlib, and Jupyter Notebook. 
-b. Either TensorFlow or PyTorch
-c. GraphViz and its Python wrapper to generate network graphs. The easiest way to install it is 
+- a. Python3, Numpy, Matplotlib, and Jupyter Notebook. 
+- b. Either TensorFlow or PyTorch
+- c. GraphViz and its Python wrapper to generate network graphs. The easiest way to install it is 
 
     **If you use Conda:**
     ```bash
     conda install graphviz python-graphviz
     ```
-
+    
     **Otherwise:**
     * [Install GraphViz](https://graphviz.gitlab.io/download/)
     * Then install the [Python wrapper for GraphViz](https://github.com/xflr6/graphviz) using pip:
-        ```
+        ```bash
         pip3 install graphviz
         ```
 
 ## 2. Install HiddenLayer
 
-### a. From GitHub (Developer Mode)
+### a. Install to your `site-packages` directly from GitHub
+Use this if you want to install the latest version of the library.
+
+```bash
+pip install git+https://github.com/waleedka/hiddenlayer.git
+```
+
+### b. Clone From GitHub (Developer Mode)
 Use this if you want to edit or customize the library locally.
 
 ```bash
@@ -126,7 +137,8 @@ cd hiddenlayer
 pip install -e .
 ```
 
-### b. Using PIP
+### c. Using PIP
 ```bash
 pip install hiddenlayer
 ```
+Note that PyPi may not host the latest version of the library.
