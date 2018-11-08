@@ -321,7 +321,7 @@ class Graph():
                  fontsize=self.theme["font_size"],
                  fontcolor=self.theme["font_color"],
                  fontname=self.theme["font_name"])
-        dot.attr("edge", style="dotted", 
+        dot.attr("edge", style="solid", 
                  color=self.theme["outline_color"],
                  fontsize=self.theme["font_size"],
                  fontcolor=self.theme["font_color"],
