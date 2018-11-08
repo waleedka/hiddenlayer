@@ -10,7 +10,6 @@ Licensed under the MIT License
 import itertools
 import math
 import numpy as np
-from graphviz import Digraph
 import matplotlib
 import matplotlib.pyplot as plt
 import IPython.display

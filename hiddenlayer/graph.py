@@ -12,7 +12,6 @@ import os
 import re
 from random import getrandbits
 import numpy as np
-from graphviz import Digraph
 
 
 THEMES = {
@@ -304,6 +303,8 @@ class Graph():
 
         Returns a GraphViz Digraph object.
         """
+        from graphviz import Digraph
+
         # Build GraphViz Digraph
         dot = Digraph()
         dot.attr("graph", 
