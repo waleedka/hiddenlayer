@@ -21,7 +21,9 @@ FRAMEWORK_TRANSFORMS = [
     ht.Prune("Variable"),
     ht.PruneBranch("Assign"),
     ht.PruneBranch("AssignSub"),
+    ht.PruneBranch("AssignAdd"),
     ht.Prune("ApplyMomentum"),
+    ht.Prune("ApplyAdam"),
     ht.FoldId(r"^(gradients)/.*", "NoOp"),  # Fold to NoOp then delete in the next step
     ht.Prune("NoOp"),
     ht.Rename(op=r"Conv2D", to="Conv"),
