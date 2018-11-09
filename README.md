@@ -118,14 +118,7 @@ If you like to contribute new features, here are a few things we wanted to add b
 
 ## 2. Install HiddenLayer
 
-### a. Install to your `site-packages` directly from GitHub
-Use this if you want to install the latest version of the library.
-
-```bash
-pip install git+https://github.com/waleedka/hiddenlayer.git
-```
-
-### b. Clone From GitHub (Developer Mode)
+### a. Clone From GitHub (Developer Mode)
 Use this if you want to edit or customize the library locally.
 
 ```bash
@@ -137,8 +130,14 @@ cd hiddenlayer
 pip install -e .
 ```
 
-### c. Using PIP
+### b. Using PIP ("stable" release)
 ```bash
 pip install hiddenlayer
 ```
-Note that PyPi may not host the latest version of the library.
+
+### c. Install to your `site-packages` directly from GitHub
+Use the following if you just want to install the latest version of the library:
+
+```bash
+pip install git+https://github.com/waleedka/hiddenlayer.git
+```
