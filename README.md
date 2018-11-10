@@ -48,7 +48,7 @@ And if you're on a server without a GUI, you can save snapshots of the graphs to
 ## 3. Hackable
 
 HiddenLayer is a small library. It covers the basics, but you'll likely need to extend it for your own use case. For example, say you want to represent the model accuracy as a pie chart rather than a plot.
-This can be done by extending the `Canbas` class and adding a new method as such:
+This can be done by extending the `Canvas` class and adding a new method as such:
 
 ```
 class MyCanvas(hl.Canvas):
@@ -66,7 +66,9 @@ See the [pytorch_train.ipynb](demos/pytorch_train.ipynb) or [tf_train.ipynb](dem
 
 ![](assets/readme_canvas_piechart.gif)
 
+The [`keras_train.ipynb`](demos/keras_train.ipynb) notebook contains an actual training example that illustrates how to create a custom `Canvas` to plot a confusion matrix alongside validation metrics:
 
+![](assets/readme_canvas_cm.gif)
 
 # Demos
 
@@ -83,7 +85,8 @@ This notebook shows how to generate graphs for a few popular Pytorch models.
 - [`history_canvas.py`](demos/history_canvas.py): An example of using HiddenLayer without a GUI.
 
 **Keras:**
-  - [`keras_graph.ipynb`](demos/keras_graph.ipynb): This notebook illustrates how to generate graphs for various Keras models.
+- [`keras_graph.ipynb`](demos/keras_graph.ipynb): This notebook illustrates how to generate graphs for various Keras models.
+- [`keras_train.ipynb`](demos/keras_train.ipynb): Demonstrates model graphing, visualization of training metrics, and how to create a custom Keras callback that uses a subclassed `Canvas` in order to plot a confusion matrix at the end of each training epoch.
 
 # Contributing
 
@@ -91,7 +94,6 @@ HiddenLayer is released under the MIT license.
 Feel free to extend it or customize it for your needs. If you discover bugs, which is likely since this is an early release, please do report them or submit a pull request.
 
 If you like to contribute new features, here are a few things we wanted to add but never got around to it:
-- Keras training notebook. This probably works already since Keras uses the TensorFlow backend. It was not tested, though.
 - Support for older versions of Python. Currently, it's only tested on Python 3.6.
 - Optimization to support logging big experiments.
 
