@@ -192,12 +192,12 @@ class Rename():
 # These transforms are used AFTER the framework specific transforms
 # that map TF and PyTorch graphs to a common representation.
 SIMPLICITY_TRANSFORMS = [
-    Fold("Conv > Conv > BatchNormalization > Relu", "ConvConvBnRelu"),
-    Fold("Conv > BatchNormalization > Relu", "ConvBnRelu"),
-    Fold("Conv > BatchNormalization", "ConvBn"),
+    Fold("Conv > Conv > BatchNorm > Relu", "ConvConvBnRelu"),
+    Fold("Conv > BatchNorm > Relu", "ConvBnRelu"),
+    Fold("Conv > BatchNorm", "ConvBn"),
     Fold("Conv > Relu", "ConvRelu"),
     Fold("Linear > Relu", "LinearRelu"),
-    Fold("ConvBnRelu > MaxPool", "ConvBnReluMaxpool"),
-    Fold("ConvRelu > MaxPool", "ConvReluMaxpool"),
+    # Fold("ConvBnRelu > MaxPool", "ConvBnReluMaxpool"),
+    # Fold("ConvRelu > MaxPool", "ConvReluMaxpool"),
     FoldDuplicates(),
 ]
