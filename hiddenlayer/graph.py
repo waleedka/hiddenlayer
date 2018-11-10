@@ -84,6 +84,12 @@ class Node():
             # Kernel
             kernel = self.params["kernel_shape"]
             title += "x".join(map(str, kernel))
+        if "stride" in self.params:
+            stride = self.params["stride"]
+            if np.unique(stride).size == 1:
+                stride = stride[0]
+            if stride != 1:
+                title += "/s{}".format(str(stride))
         #         # Transposed
         #         if node.transposed:
         #             name = "Transposed" + name
@@ -97,12 +103,12 @@ class Node():
         caption = ""
 
         # Stride
-        if "stride" in self.params:
-            stride = self.params["stride"]
-            if np.unique(stride).size == 1:
-                stride = stride[0]
-            if stride != 1:
-                caption += "/{}".format(str(stride))
+        # if "stride" in self.params:
+        #     stride = self.params["stride"]
+        #     if np.unique(stride).size == 1:
+        #         stride = stride[0]
+        #     if stride != 1:
+        #         caption += "/{}".format(str(stride))
         return caption
 
     def __repr__(self):
