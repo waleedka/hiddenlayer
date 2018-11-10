@@ -33,12 +33,12 @@ FRAMEWORK_TRANSFORMS = [
     ht.Prune("NoOp"),
     ht.Rename(op=r"DepthwiseConv2dNative", to="SeparableConv"),
     ht.Rename(op=r"Conv2D", to="Conv"),
-    ht.Rename(op=r"FusedBatchNorm", to="BatchNormalization"),
+    ht.Rename(op=r"FusedBatchNorm", to="BatchNorm"),
     ht.Rename(op=r"MatMul", to="Linear"),
     ht.Fold("Conv > BiasAdd", "__first__"),
     ht.Fold("Linear > BiasAdd", "__first__"),
+    ht.Fold("Shape > StridedSlice > Pack > Reshape", "__last__"),
     ht.FoldId(r"(.+)/dropout/.*", "Dropout"),
-    ht.FoldId(r"(.+)/flatten/.*", "Flatten"),
     ht.FoldId(r"(softmax_cross\_entropy)\_with\_logits.*", "SoftmaxCrossEntropy"),
 ]
 
@@ -126,14 +126,17 @@ def import_node(tf_node, tf_graph, verbose=False):
         kernel_shape = tf.graph_util.tensor_shape_from_node_def_name(tf_graph, tf_node.input[1])
         kernel_shape = [int(a) for a in kernel_shape]
         params["kernel_shape"] = kernel_shape[0:2]
+        if 'strides' in tf_node.attr.keys():
+            strides = [int(a) for a in tf_node.attr['strides'].list.i]
+            params["stride"] = strides[1:3]
     elif op == "MaxPool" or op == "AvgPool":
         # 2/ the stride used by pooling layers
         # See https://stackoverflow.com/questions/44124942/how-to-access-values-in-protos-in-tensorflow
         if 'ksize' in tf_node.attr.keys():
             kernel_shape = [int(a) for a in tf_node.attr['ksize'].list.i]
             params["kernel_shape"] = kernel_shape[1:3]
-        # if 'strides' in node.attr.keys():
-        #     strides = [int(a) for a in node.attr['strides'].list.i]
-        #     params["stride"] = strides[1:3]
+        if 'strides' in tf_node.attr.keys():
+            strides = [int(a) for a in tf_node.attr['strides'].list.i]
+            params["stride"] = strides[1:3]
 
     return op, uid, name, shape, params
