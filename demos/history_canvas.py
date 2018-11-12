@@ -40,7 +40,7 @@ for step in range(1000):
         # Less occasionally, save a snapshot of the graphs
         if step % 100 == 0:
             # Plot the two metrics in one graph
-            c.draw_plot(h["loss"], h["accuracy"])
+            c.draw_plot([h["loss"], h["accuracy"]])
             # Save the canvas
             c.save(os.path.join(OUTPUT_DIR, "training_progress.png"))
 
