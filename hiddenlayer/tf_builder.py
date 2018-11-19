@@ -83,9 +83,9 @@ def import_graph(hl_graph, tf_graph, output=None, verbose=False):
                 logging.exception("Failed to read node {}".format(tf_node))
             continue
 
-        # Add layer
-        layer = Node(uid=uid, name=name, op=op, output_shape=shape, params=params)
-        hl_graph.add_node(layer)
+        # Add node
+        hl_node = Node(uid=uid, name=name, op=op, output_shape=shape, params=params)
+        hl_graph.add_node(hl_node)
 
         # Add edges
         for target_node in graph_def.node:

@@ -45,6 +45,24 @@ def pytorch_id(node):
     return node.scopeName() + "/outputs/" + "/".join([o.uniqueName() for o in node.outputs()])
 
 
+def get_shape(torch_node):
+    """Return the output shape of the given Pytorch node."""
+    # Extract node output shape from the node string representation
+    # This is a hack because there doesn't seem to be an official way to do it.
+    # See my quesiton in the PyTorch forum:
+    # https://discuss.pytorch.org/t/node-output-shape-from-trace-graph/24351/2
+    # TODO: find a better way to extract output shape
+    # TODO: Assuming the node has one output. Update if we encounter a multi-output node.
+    m = re.match(r".*Float\(([\d\s\,]+)\).*", str(next(torch_node.outputs())))
+    if m:
+        shape = m.group(1)
+        shape = shape.split(",")
+        shape = tuple(map(int, shape))
+    else:
+        shape = None
+    return shape
+
+
 def import_graph(hl_graph, model, args, input_names=None, verbose=False):
     # TODO: add input names to graph
 
@@ -66,21 +84,15 @@ def import_graph(hl_graph, model, args, input_names=None, verbose=False):
         # Inputs/outputs
         # TODO: inputs = [i.unique() for i in node.inputs()]
         outputs = [o.unique() for o in torch_node.outputs()]
+        # Get output shape
+        shape = get_shape(torch_node)
         # Add HL node
-        hl_node = Node(uid=pytorch_id(torch_node), name=None, op=op, params=params)
+        hl_node = Node(uid=pytorch_id(torch_node), name=None, op=op, 
+                       output_shape=shape, params=params)
         hl_graph.add_node(hl_node)
         # Add edges
         for target_torch_node in torch_graph.nodes():
             target_inputs = [i.unique() for i in target_torch_node.inputs()]
             if set(outputs) & set(target_inputs):
-                # Output shape
-                # TODO: find a better way to extract output shape
-                m = re.match(r".*Float\(([\d\s\,]+)\).*", str(next(torch_node.outputs())))
-                if m:
-                    shape = m.group(1)
-                    shape = shape.split(",")
-                    shape = tuple(map(int, shape))
-                else:
-                    shape = None
                 hl_graph.add_edge_by_id(pytorch_id(torch_node), pytorch_id(target_torch_node), shape)
     return hl_graph
