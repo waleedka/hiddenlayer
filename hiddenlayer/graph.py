@@ -142,7 +142,9 @@ def build_graph(model=None, args=None, input_names=None,
     elif framework == "tensorflow":
         from .tf_builder import import_graph, FRAMEWORK_TRANSFORMS
         import_graph(g, model)
-    
+    else:
+        raise ValueError("`model` input param must be a PyTorch, TensorFlow, or Keras-with-TensorFlow-backend model.") 
+
     # Apply Transforms
     if framework_transforms:
         if framework_transforms == "default":
