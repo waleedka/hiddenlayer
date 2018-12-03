@@ -4,7 +4,7 @@ setuptools.setup(
     name = 'hiddenlayer',
     # packages = ['hiddenlayer'],
     packages = setuptools.find_packages(),
-    version = '0.1',
+    version = '0.2',
     license="MIT",
     description = 'Neural network graphs and training metrics for PyTorch and TensorFlow',
     author = 'Waleed Abdulla <waleed.abdulla@gmail.com>, Phil Ferriere <pferriere@hotmail.com>',
