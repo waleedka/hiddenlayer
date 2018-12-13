@@ -238,6 +238,29 @@ class TestTransforms(unittest.TestCase):
         g = t.apply(g)
         self.assertEqual(g.incoming(g["c"])[0].op, "ab")
 
+    def test_fold_duplicates(self):
+        g = hl.Graph()
+        a = hl.Node(uid="a", name="a", op="a")
+        b1 = hl.Node(uid="b1", name="b1", op="b", output_shape=(3, 3))
+        b2 = hl.Node(uid="b2", name="b2", op="b", output_shape=(4, 4))
+        c = hl.Node(uid="c", name="c", op="c")
+        d = hl.Node(uid="d", name="d", op="d")
+        g.add_node(a)
+        g.add_node(b1)
+        g.add_node(b2)
+        g.add_node(c)
+        g.add_node(d)
+        g.add_edge(a, b1)
+        g.add_edge(b1, b2)
+        g.add_edge(b2, c)
+        g.add_edge(b2, d)
+
+        t = ht.FoldDuplicates()
+        g = t.apply(g)
+        self.assertEqual(g.incoming(g["c"])[0].op, "b")
+        self.assertEqual(g.incoming(g["c"])[0].name, "b1")
+        self.assertEqual(g.incoming(g["c"])[0].output_shape, (4, 4))
+
     def test_parallel_fold(self):
         g = hl.Graph()
         a = hl.Node(uid="a", name="a", op="a")

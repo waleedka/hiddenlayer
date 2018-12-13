@@ -154,10 +154,11 @@ class FoldDuplicates():
                 pattern = ge.SerialPattern([ge.NodePattern(node.op), ge.NodePattern(node.op)])
                 matches, _ = pattern.match(graph, node)
                 if matches:
+                    # Use op and name from the first node, and output_shape from the last
                     combo = Node(uid=graph.sequence_id(matches),
                                 name=node.name,
                                 op=node.op,
-                                output_shape=node.output_shape)
+                                output_shape=matches[-1].output_shape)
                     combo._caption = node.caption
                     combo.repeat = sum([n.repeat for n in matches])
                     graph.replace(matches, combo)
