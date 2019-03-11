@@ -30,4 +30,7 @@ setuptools.setup(
 
     'Operating System :: OS Independent',
     ],
+    install_requires=[
+          'matplotlib>=2.2.0',
+      ]
 )
