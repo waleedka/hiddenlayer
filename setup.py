@@ -3,13 +3,12 @@ import setuptools
 setuptools.setup(
     name = 'hiddenlayer',
     # packages = ['hiddenlayer'],
-    packages = setuptools.find_packages(),
+    packages = setuptools.find_packages().append('packaging'),
     version = '0.2',
     license="MIT",
     description = 'Neural network graphs and training metrics for PyTorch and TensorFlow',
     author = 'Waleed Abdulla <waleed.abdulla@gmail.com>, Phil Ferriere <pferriere@hotmail.com>',
     url = 'https://github.com/waleedka/hiddenlayer',
-    packages=['packaging'],
     classifiers = [
     # How mature is this project? Common values are
     #   3 - Alpha
