@@ -9,6 +9,7 @@ setuptools.setup(
     description = 'Neural network graphs and training metrics for PyTorch and TensorFlow',
     author = 'Waleed Abdulla <waleed.abdulla@gmail.com>, Phil Ferriere <pferriere@hotmail.com>',
     url = 'https://github.com/waleedka/hiddenlayer',
+    packages=['packaging'],
     classifiers = [
     # How mature is this project? Common values are
     #   3 - Alpha
