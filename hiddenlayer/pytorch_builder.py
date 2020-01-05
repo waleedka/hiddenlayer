@@ -11,6 +11,7 @@ from __future__ import absolute_import, division, print_function
 import re
 from .graph import Graph, Node
 from . import transforms as ht
+from packaging import version
 import torch
 
 # PyTorch Graph Transforms
@@ -37,12 +38,15 @@ def dump_pytorch_graph(graph):
                        [i.unique() for i in node.outputs()]
                        ))
 
+def name_for(node):
+    return version.parse(torch.__version__) < version.parse("1.3") ? node.debugName() : node.debugName()
+
 
 def pytorch_id(node):
     """Returns a unique ID for a node."""
     # After ONNX simplification, the scopeName is not unique anymore
     # so append node outputs to guarantee uniqueness
-    return node.scopeName() + "/outputs/" + "/".join([o.debugName() for o in node.outputs()])
+    return node.scopeName() + "/outputs/" + "/".join([name_for(node) for o in node.outputs()])
 
 
 def get_shape(torch_node):
