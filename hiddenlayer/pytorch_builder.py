@@ -39,7 +39,7 @@ def dump_pytorch_graph(graph):
                        ))
 
 def name_for(node):
-    return version.parse(torch.__version__) < version.parse("1.3") ? node.debugName() : node.debugName()
+    return version.parse(torch.__version__) < version.parse("1.3") ? node.uniqueName() : node.debugName()
 
 
 def pytorch_id(node):
