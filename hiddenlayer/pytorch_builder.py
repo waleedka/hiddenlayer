@@ -18,7 +18,7 @@ FRAMEWORK_TRANSFORMS = [
     # Hide onnx: prefix
     ht.Rename(op=r"onnx::(.*)", to=r"\1"),
     # ONNX uses Gemm for linear layers (stands for General Matrix Multiplication).
-    # It's an odd name that noone recognizes. Rename it. 
+    # It's an odd name that noone recognizes. Rename it.
     ht.Rename(op=r"Gemm", to=r"Linear"),
     # PyTorch layers that don't have an ONNX counterpart
     ht.Rename(op=r"aten::max\_pool2d\_with\_indices", to="MaxPool"),
@@ -42,7 +42,7 @@ def pytorch_id(node):
     """Returns a unique ID for a node."""
     # After ONNX simplification, the scopeName is not unique anymore
     # so append node outputs to guarantee uniqueness
-    return node.scopeName() + "/outputs/" + "/".join([o.uniqueName() for o in node.outputs()])
+    return node.scopeName() + "/outputs/" + "/".join([o.uniqueName() if hasattr(o, 'uniqueName') else o.debugName() for o in node.outputs()])
 
 
 def get_shape(torch_node):
@@ -80,14 +80,14 @@ def import_graph(hl_graph, model, args, input_names=None, verbose=False):
         # Op
         op = torch_node.kind()
         # Parameters
-        params = {k: torch_node[k] for k in torch_node.attributeNames()} 
+        params = {k: torch_node[k] for k in torch_node.attributeNames()}
         # Inputs/outputs
         # TODO: inputs = [i.unique() for i in node.inputs()]
         outputs = [o.unique() for o in torch_node.outputs()]
         # Get output shape
         shape = get_shape(torch_node)
         # Add HL node
-        hl_node = Node(uid=pytorch_id(torch_node), name=None, op=op, 
+        hl_node = Node(uid=pytorch_id(torch_node), name=None, op=op,
                        output_shape=shape, params=params)
         hl_graph.add_node(hl_node)
         # Add edges
