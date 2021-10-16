@@ -354,6 +354,33 @@ class Graph():
             dot.edge(str(a), str(b), label)
         return dot
 
+    def build_nx(self):
+        """Generate a Networkx graph.
+
+        Returns a Networkx Digraph object.
+        """
+        import networkx as nx
+
+        # Build GraphViz Digraph
+        G = nx.DiGraph()
+        nodes = []
+        for k, n in self.nodes.items():
+            label = "{} ".format(n.title)
+            if n.caption:
+                label += "{} ".format(n.caption)
+            if n.repeat > 1:
+                label += "x{}".format(n.repeat)
+            label = " " + label + " "
+            nodes.append((str(k), {'label': label, 'shape': 'box'}))
+        G.add_nodes_from(nodes)
+
+        for a, b, label in self.edges:
+            if isinstance(label, (list, tuple)):
+                label = "x".join([str(l or "?") for l in label])
+            G.add_edge(str(a), str(b), label=label)
+            # dot.edge(str(a), str(b), label)
+        return G
+
     def _repr_svg_(self):
         """Allows Jupyter notebook to render the graph automatically."""
         return self.build_dot()._repr_svg_()
